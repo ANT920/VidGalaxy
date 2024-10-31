@@ -1,0 +1,92 @@
+<!doctype html>
+<html lang="ru">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Загрузить Видео</title>
+    <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Roboto:wght@400;700&display=swap">
+    <style>
+        body.light-mode {
+            font-family: 'Roboto', sans-serif;
+            background-color: #f4f4f4;
+            color: #333;
+        }
+        body.dark-mode {
+            font-family: 'Roboto', sans-serif;
+            background-color: #1e1e1e;
+            color: #f4f4f4;
+        }
+        form {
+            margin-bottom: 20px;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+        }
+        input[type="file"], input[type="text"], button {
+            margin: 5px 0;
+            padding: 10px;
+            border: 1px solid #ccc;
+            border-radius: 4px;
+        }
+        button {
+            background-color: #4CAF50;
+            color: white;
+            cursor: pointer;
+        }
+        button:hover {
+            background-color: #45a049;
+        }
+        .theme-switcher {
+            cursor: pointer;
+            padding: 10px 20px;
+            background-color: #4CAF50;
+            color: white;
+            border: none;
+            border-radius: 4px;
+            margin: 20px;
+        }
+        .theme-switcher:hover {
+            background-color: #45a049;
+        }
+        .footer {
+            margin-top: 40px;
+            font-size: 14px;
+            color: #888;
+        }
+    </style>
+</head>
+<body class="light-mode">
+    <h1>Загрузить Видео</h1>
+    <button class="theme-switcher" onclick="toggleTheme()">Переключить тему</button>
+    <form id="uploadForm" enctype="multipart/form-data">
+        <input type="text" id="usernameInput" name="username" placeholder="Введите ваш ник">
+        <input type="text" id="titleInput" name="title" placeholder="Введите название видео">
+        <input type="file" id="videoInput" name="video" accept="video/*">
+        <button type="submit">Загрузить</button>
+    </form>
+    <div class="footer">
+        <p>Этот хостинг был создан на основе HTML, Python, Heroku CLI и нейросетевых шуток.</p>
+    </div>
+    <script>
+        function toggleTheme() {
+            document.body.classList.toggle('dark-mode');
+            document.body.classList.toggle('light-mode');
+        }
+
+        document.getElementById('uploadForm').addEventListener('submit', async function(event) {
+            event.preventDefault();
+            const formData = new FormData();
+            formData.append('username', document.getElementById('usernameInput').value);
+            formData.append('title', document.getElementById('titleInput').value);
+            formData.append('video', document.getElementById('videoInput').files[0]);
+            const response = await fetch('/upload', {
+                method: 'POST',
+                body: formData
+            });
+            if (response.ok) {
+                alert('Видео успешно загружено!');
+            }
+        });
+    </script>
+</body>
+</html>

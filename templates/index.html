@@ -1,0 +1,63 @@
+<!doctype html>
+<html lang="ru">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>VidGalaxy</title>
+    <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Roboto:wght@400;700&display=swap">
+    <style>
+        body.light-mode {
+            font-family: 'Roboto', sans-serif;
+            background-color: #f4f4f4;
+            color: #333;
+        }
+        body.dark-mode {
+            font-family: 'Roboto', sans-serif;
+            background-color: #1e1e1e;
+            color: #f4f4f4;
+        }
+        nav a {
+            margin: 0 15px;
+            text-decoration: none;
+            color: #4CAF50;
+        }
+        nav a:hover {
+            color: #45a049;
+        }
+        .theme-switcher {
+            cursor: pointer;
+            padding: 10px 20px;
+            background-color: #4CAF50;
+            color: white;
+            border: none;
+            border-radius: 4px;
+            margin: 20px;
+        }
+        .theme-switcher:hover {
+            background-color: #45a049;
+        }
+        .footer {
+            margin-top: 40px;
+            font-size: 14px;
+            color: #888;
+        }
+    </style>
+</head>
+<body class="light-mode">
+    <h1>Добро пожаловать в VidGalaxy</h1>
+    <nav>
+        <a href="/upload">Загрузить Видео</a>
+        <a href="/videos">Смотреть Видео</a>
+    </nav>
+    <button class="theme-switcher" onclick="toggleTheme()">Переключить тему</button>
+    <div class="footer">
+        <p>Этот хостинг был создан на основе HTML, Python, Heroku CLI и нейросетевых шуток.</p>
+    </div>
+    <script>
+        function toggleTheme() {
+            document.body.classList.toggle('dark-mode');
+            document.body.classList.toggle('light-mode');
+        }
+    </script>
+</body>
+</html>
