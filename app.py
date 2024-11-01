@@ -24,6 +24,11 @@ def init_db():
                  title TEXT,
                  avatarUrl TEXT,
                  timestamp REAL)''')
+    c.execute('''CREATE TABLE IF NOT EXISTS users
+                 (id INTEGER PRIMARY KEY AUTOINCREMENT,
+                 email TEXT UNIQUE,
+                 password TEXT,
+                 username TEXT)''')
     conn.commit()
     conn.close()
 
