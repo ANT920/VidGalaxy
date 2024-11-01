@@ -68,7 +68,7 @@ def upload():
         file.save(file_path)
 
         avatar_url = None
-        if avatar:
+        if (avatar):
             avatar_path = os.path.join(AVATAR_FOLDER, avatar.filename)
             avatar.save(avatar_path)
             avatar_url = f'/avatars/{avatar.filename}'
