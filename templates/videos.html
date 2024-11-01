@@ -1,161 +1,65 @@
-<!doctype html>
+<!DOCTYPE html>
 <html lang="ru">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Смотреть Видео</title>
-    <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Open+Sans:wght@400;700&display=swap">
+    <title>Видео</title>
     <style>
-        body.light-mode {
+        body {
             font-family: 'Open Sans', sans-serif;
             background-color: #f4f4f4;
             color: #333;
+            margin: 0;
+            padding: 20px;
         }
-        body.dark-mode {
-            font-family: 'Open Sans', sans-serif;
-            background-color: #1e1e1e;
-            color: #f4f4f4;
-        }
-        .logo {
-            width: 150px;
-            margin: 20px auto;
-        }
-        #videoContainer {
+        .video-container {
             display: flex;
-            flex-direction: column;
-            align-items: center;
-            gap: 20px;
+            flex-wrap: wrap;
         }
-        .videoItem {
-            display: flex;
-            flex-direction: column;
-            align-items: center;
-            width: 100%;
-        }
-        video {
-            width: 100%;
-            max-width: 600px;
-            border: 1px solid #673AB7;
-            border-radius: 4px;
-            box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
-        }
-        .theme-switcher {
-            cursor: pointer;
-            padding: 10px 20px;
-            background-color: #673AB7;
-            color: white;
-            border: none;
-            border-radius: 4px;
-            margin: 20px;
-        }
-        .theme-switcher:hover {
-            background-color: #5E35B1;
-        }
-        .search-bar {
-            margin-bottom: 20px;
-        }
-        input[type="text"], button {
-            margin: 5px 0;
+        .video-item {
+            margin: 10px;
             padding: 10px;
-            border: 1px solid #673AB7;
-            border-radius: 4px;
+            background-color: #fff;
+            border-radius: 8px;
+            box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
         }
-        button {
-            background-color: #673AB7;
-            color: white;
-            cursor: pointer;
-        }
-        button:hover {
-            background-color: #5E35B1;
-        }
-        .footer {
-            margin-top: 40px;
-            font-size: 14px;
-            color: #888;
-        }
-        .videoItem h2, .videoItem p {
-            color: #333;
-        }
-        body.dark-mode .videoItem h2, body.dark-mode .videoItem p {
-            color: #f4f4f4;
-        }
-        .avatar {
+        .video-item img {
+            width: 100px;
+            height: 100px;
             border-radius: 50%;
-            width: 50px;
-            height: 50px;
-            margin-right: 10px;
         }
-        .user-info {
-            display: flex;
-            align-items: center;
+        .video-item a {
+            display: block;
+            margin-top: 10px;
+            color: #673AB7;
+            text-decoration: none;
+        }
+        .video-item p {
+            margin: 5px 0;
         }
     </style>
 </head>
-<body class="light-mode">
-    <img src="static/logo.png" alt="Логотип VidGalaxy" class="logo">
-    <h1>Смотреть Загруженные Видео</h1>
-    <button class="theme-switcher" onclick="toggleTheme()">Переключить тему</button>
-    <div class="search-bar">
-        <input type="text" id="searchInput" placeholder="Искать видео...">
-        <button onclick="searchVideos()">Поиск</button>
-    </div>
-    <div id="videoContainer"></div>
-    <div class="footer">
-        <p>Этот хостинг был создан на основе HTML, Python, Heroku CLI и нейросетевых шуток.</p>
-    </div>
+<body>
+    <h1>Список видео</h1>
+    <div class="video-container" id="videosContainer"></div>
     <script>
-        let videos = [];
-
-        function toggleTheme() {
-            document.body.classList.toggle('dark-mode');
-            document.body.classList.toggle('light-mode');
-        }
-
-        async function fetchVideos() {
+        async function loadVideos() {
             const response = await fetch('/videos_data');
-            const data = await response.json();
-            videos = data.videos;
-            displayVideos(videos);
-        }
-
-        function displayVideos(videos) {
-            const videoContainer = document.getElementById('videoContainer');
-            videoContainer.innerHTML = '';
-            videos.forEach(video => {
+            const result = await response.json();
+            const container = document.getElementById('videosContainer');
+            container.innerHTML = '';
+            result.videos.forEach(video => {
                 const videoItem = document.createElement('div');
-                videoItem.className = 'videoItem';
-                const title = document.createElement('h2');
-                title.textContent = video.title;
-
-                const userInfo = document.createElement('div');
-                userInfo.className = 'user-info';
-                const avatar = document.createElement('img');
-                avatar.src = video.avatarUrl || 'static/default-avatar.png';
-                avatar.className = 'avatar';
-                const username = document.createElement('p');
-                username.textContent = `Загружено: ${video.username}`;
-
-                userInfo.appendChild(avatar);
-                userInfo.appendChild(username);
-
-                const videoElement = document.createElement('video');
-                videoElement.controls = true;
-                videoElement.src = video.url;
-
-                videoItem.appendChild(title);
-                videoItem.appendChild(userInfo);
-                videoItem.appendChild(videoElement);
-                videoContainer.appendChild(videoItem);
+                videoItem.className = 'video-item';
+                videoItem.innerHTML = `
+                    <img src="${video.avatarUrl}" alt="Avatar">
+                    <a href="${video.url}" target="_blank">${video.title}</a>
+                    <p>Автор: ${video.username}</p>
+                `;
+                container.appendChild(videoItem);
             });
         }
-
-        function searchVideos() {
-            const searchTerm = document.getElementById('searchInput').value.toLowerCase();
-            const filteredVideos = videos.filter(video => video.title.toLowerCase().includes(searchTerm));
-            displayVideos(filteredVideos);
-        }
-
-        window.onload = fetchVideos;
+        loadVideos();
     </script>
 </body>
 </html>
