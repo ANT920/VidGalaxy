@@ -86,7 +86,7 @@
                 const videoDiv = document.createElement('div');
                 videoDiv.className = 'video-recommendation';
                 const title = document.createElement('h3');
-                title.innerHTML = `<a href="/videos.html?video=${video.url}" style="text-decoration: none; color: inherit;">${video.title}</a>`;
+                title.innerHTML = `<a href="/videos?video=${video.url}" style="text-decoration: none; color: inherit;">${video.title}</a>`;
                 const uploader = document.createElement('p');
                 uploader.textContent = `Загружено: ${video.username}`;
                 videoDiv.appendChild(title);
