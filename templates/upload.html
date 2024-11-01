@@ -16,63 +16,62 @@
             background-color: #1e1e1e;
             color: #f4f4f4;
         }
+        .logo {
+            width: 150px;
+            margin: 20px auto;
+        }
         form {
             margin-bottom: 20px;
             display: flex;
             flex-direction: column;
             align-items: center;
+            background-color: #D1C4E9;
+            padding: 20px;
+            border-radius: 10px;
         }
         input[type="file"], input[type="text"], button {
             margin: 5px 0;
             padding: 10px;
-            border: 1px solid #ccc;
+            border: 1px solid #673AB7;
             border-radius: 4px;
         }
         button {
-            background-color: #4CAF50;
+            background-color: #673AB7;
             color: white;
             cursor: pointer;
         }
         button:hover {
-            background-color: #45a049;
+            background-color: #5E35B1;
         }
         .theme-switcher {
             cursor: pointer;
             padding: 10px 20px;
-            background-color: #4CAF50;
+            background-color: #673AB7;
             color: white;
             border: none;
             border-radius: 4px;
             margin: 20px;
         }
         .theme-switcher:hover {
-            background-color: #45a049;
-        }
-        .footer {
-            margin-top: 40px;
-            font-size: 14px;
-            color: #888;
+            background-color: #5E35B1;
         }
     </style>
 </head>
 <body class="light-mode">
+    <img src="логотип.png" alt="Логотип VidGalaxy" class="logo">
     <h1>Загрузить Видео</h1>
     <button class="theme-switcher" onclick="toggleTheme()">Переключить тему</button>
     <form id="uploadForm" enctype="multipart/form-data">
-        <input type="text" id="usernameInput" name="username" placeholder="Введите ваш ник">
+        <input type="text" id="usernameInput" name="username" placeholder="Введите ваш никнейм">
         <input type="text" id="titleInput" name="title" placeholder="Введите название видео">
         <input type="file" id="videoInput" name="video" accept="video/*">
         <button type="submit">Загрузить</button>
     </form>
-    <div class="footer">
-        <p>Этот хостинг был создан на основе HTML, Python, Render и нейросетевых штук.</p>
-    </div>
     <script>
         function toggleTheme() {
             document.body.classList.toggle('dark-mode');
             document.body.classList.toggle('light-mode');
         }
-
         document.getElementById('uploadForm').addEventListener('submit', async function(event) {
             event.preventDefault();
             const formData = new FormData();
