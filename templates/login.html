@@ -65,7 +65,7 @@
     <img src="static/logo.png" alt="Логотип VidGalaxy" class="logo">
     <h1>Войти в аккаунт</h1>
     <button class="theme-switcher" onclick="toggleTheme()">Переключить тему</button>
-    <form id="loginForm">
+    <form id="loginForm" method="post">
         <input type="email" id="emailInput" name="email" placeholder="Введите ваш email">
         <input type="password" id="passwordInput" name="password" placeholder="Введите ваш пароль">
         <button type="submit">Войти</button>
@@ -76,23 +76,6 @@
             document.body.classList.toggle('dark-mode');
             document.body.classList.toggle('light-mode');
         }
-        document.getElementById('loginForm').addEventListener('submit', async function(event) {
-            event.preventDefault();
-            const email = document.getElementById('emailInput').value;
-            const password = document.getElementById('passwordInput').value;
-            const response = await fetch('/login', {
-                method: 'POST',
-                headers: {
-                    'Content-Type': 'application/json'
-                },
-                body: JSON.stringify({ email, password })
-            });
-            if (response.ok) {
-                window.location.href = '/profile';
-            } else {
-                alert('Неверный email или пароль');
-            }
-        });
     </script>
 </body>
 </html>
