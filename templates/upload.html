@@ -65,6 +65,7 @@
         <input type="text" id="usernameInput" name="username" placeholder="Введите ваш никнейм">
         <input type="text" id="titleInput" name="title" placeholder="Введите название видео">
         <input type="file" id="videoInput" name="video" accept="video/*">
+        <input type="file" id="avatarInput" name="avatar" accept="image/*" placeholder="Загрузить аватарку">
         <button type="submit">Загрузить</button>
     </form>
     <script>
@@ -78,6 +79,7 @@
             formData.append('username', document.getElementById('usernameInput').value);
             formData.append('title', document.getElementById('titleInput').value);
             formData.append('video', document.getElementById('videoInput').files[0]);
+            formData.append('avatar', document.getElementById('avatarInput').files[0]);
             const response = await fetch('/upload', {
                 method: 'POST',
                 body: formData
