@@ -103,7 +103,7 @@ def register_user():
             
             # Хешируем пароль
             hashed_password = hashlib.sha256(password.encode()).hexdigest()
-            print("Registered hashed password:", hashed_password)  # вывод хешированного пароля
+            print("Registering user:", email, hashed_password)  # вывод информации для отладки
             
             conn = sqlite3.connect(DATABASE)
             c = conn.cursor()
@@ -114,8 +114,10 @@ def register_user():
             
             return render_template('login.html', message='Регистрация успешна, пожалуйста, войдите.')
         except sqlite3.IntegrityError:
+            print("IntegrityError: Этот email уже зарегистрирован.")  # вывод ошибки для отладки
             return render_template('register.html', message='Этот email уже зарегистрирован.')
         except Exception as e:
+            print("Error during registration:", str(e))  # вывод ошибки для отладки
             return render_template('register.html', message=str(e))
     return render_template('register.html')
 
@@ -128,7 +130,7 @@ def login_user():
         
         # Хешируем пароль для проверки
         hashed_password = hashlib.sha256(password.encode()).hexdigest()
-        print("Login hashed password:", hashed_password)  # вывод хешированного пароля при входе
+        print("Login attempt:", email, hashed_password)  # вывод информации для отладки
         
         conn = sqlite3.connect(DATABASE)
         c = conn.cursor()
@@ -137,9 +139,10 @@ def login_user():
         conn.close()
         
         if user:
-            # Перенаправляем на страницу профиля пользователя
+            print("Login successful:", user)  # вывод успешного входа для отладки
             return render_template('profile.html', user_id=user[0], username=user[1])
         else:
+            print("Login failed: Неверный email или пароль.")  # вывод ошибки для отладки
             return render_template('login.html', message='Неверный email или пароль.')
     return render_template('login.html')
 
