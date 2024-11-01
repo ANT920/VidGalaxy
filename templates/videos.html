@@ -32,6 +32,15 @@
         .theme-switcher:hover {
             background-color: #5E35B1;
         }
+        .search-bar {
+            margin: 20px auto;
+            padding: 10px;
+            width: 50%;
+            border: 1px solid #673AB7;
+            border-radius: 4px;
+            display: block;
+            font-size: 16px;
+        }
         .video-container {
             display: flex;
             flex-wrap: wrap;
@@ -64,6 +73,7 @@
 <body class="light-mode">
     <img src="static/logo.png" alt="Логотип VidGalaxy" class="logo">
     <button class="theme-switcher" onclick="toggleTheme()">Сменить тему</button>
+    <input type="text" id="searchBar" class="search-bar" placeholder="Поиск видео...">
     <h1>Список видео</h1>
     <div class="video-container" id="videosContainer"></div>
     <script>
@@ -87,6 +97,17 @@
                 container.appendChild(videoItem);
             });
         }
+
+        function searchVideos() {
+            const query = document.getElementById('searchBar').value.toLowerCase();
+            const videoItems = document.getElementsByClassName('video-item');
+            Array.from(videoItems).forEach(item => {
+                const title = item.querySelector('a').innerText.toLowerCase();
+                item.style.display = title.includes(query) ? 'block' : 'none';
+            });
+        }
+
+        document.getElementById('searchBar').addEventListener('input', searchVideos);
         loadVideos();
     </script>
 </body>
