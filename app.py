@@ -85,7 +85,7 @@ def upload():
               (video_data['url'], video_data['username'], video_data['title'], video_data['avatarUrl'], video_data['timestamp']))
     conn.commit()
     conn.close()
-    return jsonify({'url': f'/uploads/{file.filename}'})
+    return redirect(url_for('videos_page'))  # Перенаправление на страницу видео после загрузки
 
 @app.route('/uploads/<filename>')
 def uploaded_file(filename):
