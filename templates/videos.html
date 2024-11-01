@@ -1,161 +1,76 @@
-<!doctype html>
-<html lang="ru">
-<head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Смотреть Видео</title>
-    <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Open+Sans:wght@400;700&display=swap">
-    <style>
-        body.light-mode {
-            font-family: 'Open Sans', sans-serif;
-            background-color: #f4f4f4;
-            color: #333;
-        }
-        body.dark-mode {
-            font-family: 'Open Sans', sans-serif;
-            background-color: #1e1e1e;
-            color: #f4f4f4;
-        }
-        .logo {
-            width: 150px;
-            margin: 20px auto;
-        }
-        #videoContainer {
-            display: flex;
-            flex-direction: column;
-            align-items: center;
-            gap: 20px;
-        }
-        .videoItem {
-            display: flex;
-            flex-direction: column;
-            align-items: center;
-            width: 100%;
-        }
-        video {
-            width: 100%;
-            max-width: 600px;
-            border: 1px solid #673AB7;
-            border-radius: 4px;
-            box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
-        }
-        .theme-switcher {
-            cursor: pointer;
-            padding: 10px 20px;
-            background-color: #673AB7;
-            color: white;
-            border: none;
-            border-radius: 4px;
-            margin: 20px;
-        }
-        .theme-switcher:hover {
-            background-color: #5E35B1;
-        }
-        .search-bar {
-            margin-bottom: 20px;
-        }
-        input[type="text"], button {
-            margin: 5px 0;
-            padding: 10px;
-            border: 1px solid #673AB7;
-            border-radius: 4px;
-        }
-        button {
-            background-color: #673AB7;
-            color: white;
-            cursor: pointer;
-        }
-        button:hover {
-            background-color: #5E35B1;
-        }
-        .footer {
-            margin-top: 40px;
-            font-size: 14px;
-            color: #888;
-        }
-        .videoItem h2, .videoItem p {
-            color: #333;
-        }
-        body.dark-mode .videoItem h2, body.dark-mode .videoItem p {
-            color: #f4f4f4;
-        }
-        .avatar {
-            border-radius: 50%;
-            width: 50px;
-            height: 50px;
-            margin-right: 10px;
-        }
-        .user-info {
-            display: flex;
-            align-items: center;
-        }
-    </style>
-</head>
-<body class="light-mode">
-    <img src="static/logo.png" alt="Логотип VidGalaxy" class="logo">
-    <h1>Смотреть Загруженные Видео</h1>
-    <button class="theme-switcher" onclick="toggleTheme()">Переключить тему</button>
-    <div class="search-bar">
-        <input type="text" id="searchInput" placeholder="Искать видео...">
-        <button onclick="searchVideos()">Поиск</button>
-    </div>
-    <div id="videoContainer"></div>
-    <div class="footer">
-        <p>Этот хостинг был создан на основе HTML, Python, Heroku CLI и нейросетевых шуток.</p>
-    </div>
-    <script>
-        let videos = [];
+import sqlite3
+from flask import Flask, render_template, request, jsonify, send_from_directory
+import os
 
-        function toggleTheme() {
-            document.body.classList.toggle('dark-mode');
-            document.body.classList.toggle('light-mode');
-        }
+app = Flask(__name__)
 
-        async function fetchVideos() {
-            const response = await fetch('/videos_data');
-            const data = await response.json();
-            videos = data.videos;
-            displayVideos(videos);
-        }
+UPLOAD_FOLDER = 'uploads'
+if not os.path.exists(UPLOAD_FOLDER):
+    os.makedirs(UPLOAD_FOLDER)
 
-        function displayVideos(videos) {
-            const videoContainer = document.getElementById('videoContainer');
-            videoContainer.innerHTML = '';
-            videos.forEach(video => {
-                const videoItem = document.createElement('div');
-                videoItem.className = 'videoItem';
-                const title = document.createElement('h2');
-                title.textContent = video.title;
+# Функция инициализации базы данных
+def init_db():
+    conn = sqlite3.connect('database.db')
+    c = conn.cursor()
+    c.execute('''CREATE TABLE IF NOT EXISTS videos
+                 (id INTEGER PRIMARY KEY AUTOINCREMENT,
+                 url TEXT,
+                 username TEXT,
+                 title TEXT,
+                 avatarUrl TEXT,
+                 timestamp REAL)''')
+    conn.commit()
+    conn.close()
 
-                const userInfo = document.createElement('div');
-                userInfo.className = 'user-info';
-                const avatar = document.createElement('img');
-                avatar.src = video.avatarUrl || 'static/default-avatar.png';
-                avatar.className = 'avatar';
-                const username = document.createElement('p');
-                username.textContent = `Загружено: ${video.username}`;
+@app.route('/')
+def index():
+    return render_template('index.html')
 
-                userInfo.appendChild(avatar);
-                userInfo.appendChild(username);
+@app.route('/upload')
+def upload_page():
+    return render_template('upload.html')
 
-                const videoElement = document.createElement('video');
-                videoElement.controls = true;
-                videoElement.src = video.url;
+@app.route('/videos')
+def videos_page():
+    return render_template('videos.html')
 
-                videoItem.appendChild(title);
-                videoItem.appendChild(userInfo);
-                videoItem.appendChild(videoElement);
-                videoContainer.appendChild(videoItem);
-            });
-        }
+@app.route('/videos_data', methods=['GET'])
+def get_videos():
+    conn = sqlite3.connect('database.db')
+    c = conn.cursor()
+    c.execute("SELECT url, username, title, avatarUrl FROM videos ORDER BY timestamp DESC")
+    videos = [{'url': row[0], 'username': row[1], 'title': row[2], 'avatarUrl': row[3]} for row in c.fetchall()]
+    conn.close()
+    return jsonify({'videos': videos})
 
-        function searchVideos() {
-            const searchTerm = document.getElementById('searchInput').value.toLowerCase();
-            const filteredVideos = videos.filter(video => video.title.toLowerCase().includes(searchTerm));
-            displayVideos(filteredVideos);
-        }
+@app.route('/upload', methods=['POST'])
+def upload():
+    file = request.files['video']
+    username = request.form['username']
+    title = request.form['title']
+    avatarUrl = request.form.get('avatarUrl')  # Получаем URL аватарки из формы
+    file_path = os.path.join(UPLOAD_FOLDER, file.filename)
+    file.save(file_path)
+    video_data = {
+        'url': f'/uploads/{file.filename}',
+        'username': username,
+        'title': title,
+        'avatarUrl': avatarUrl,
+        'timestamp': os.path.getmtime(file_path)
+    }
+    conn = sqlite3.connect('database.db')
+    c = conn.cursor()
+    c.execute("INSERT INTO videos (url, username, title, avatarUrl, timestamp) VALUES (?, ?, ?, ?, ?)",
+              (video_data['url'], video_data['username'], video_data['title'], video_data['avatarUrl'], video_data['timestamp']))
+    conn.commit()
+    conn.close()
+    return jsonify({'url': f'/uploads/{file.filename}'})
 
-        window.onload = fetchVideos;
-    </script>
-</body>
-</html>
+@app.route('/uploads/<filename>')
+def uploaded_file(filename):
+    return send_from_directory(UPLOAD_FOLDER, filename)
+
+if __name__ == '__main__':
+    init_db()
+    port = int(os.environ.get("PORT", 8000))
+    app.run(host='0.0.0.0', port=port)
