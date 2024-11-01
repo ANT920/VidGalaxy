@@ -87,6 +87,14 @@ def uploaded_file(filename):
 def uploaded_avatar(filename):
     return send_from_directory(AVATAR_FOLDER, filename)
 
+@app.route('/login')
+def login_page():
+    return render_template('login.html')
+
+@app.route('/register')
+def register_page():
+    return render_template('register.html')
+
 if __name__ == '__main__':
     init_db()
     port = int(os.environ.get("PORT", 8000))
