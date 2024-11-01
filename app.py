@@ -6,6 +6,8 @@ app = Flask(__name__)
 
 UPLOAD_FOLDER = 'uploads'
 AVATAR_FOLDER = 'avatars'
+DATABASE = 'database.db'
+
 if not os.path.exists(UPLOAD_FOLDER):
     os.makedirs(UPLOAD_FOLDER)
 if not os.path.exists(AVATAR_FOLDER):
@@ -13,7 +15,7 @@ if not os.path.exists(AVATAR_FOLDER):
 
 # Функция инициализации базы данных
 def init_db():
-    conn = sqlite3.connect('database.db')
+    conn = sqlite3.connect(DATABASE)
     c = conn.cursor()
     c.execute('''CREATE TABLE IF NOT EXISTS videos
                  (id INTEGER PRIMARY KEY AUTOINCREMENT,
@@ -39,7 +41,7 @@ def videos_page():
 
 @app.route('/videos_data', methods=['GET'])
 def get_videos():
-    conn = sqlite3.connect('database.db')
+    conn = sqlite3.connect(DATABASE)
     c = conn.cursor()
     c.execute("SELECT url, username, title, avatarUrl FROM videos ORDER BY timestamp DESC")
     videos = [{'url': row[0], 'username': row[1], 'title': row[2], 'avatarUrl': row[3]} for row in c.fetchall()]
@@ -69,7 +71,7 @@ def upload():
         'avatarUrl': avatar_url,
         'timestamp': os.path.getmtime(file_path)
     }
-    conn = sqlite3.connect('database.db')
+    conn = sqlite3.connect(DATABASE)
     c = conn.cursor()
     c.execute("INSERT INTO videos (url, username, title, avatarUrl, timestamp) VALUES (?, ?, ?, ?, ?)",
               (video_data['url'], video_data['username'], video_data['title'], video_data['avatarUrl'], video_data['timestamp']))
