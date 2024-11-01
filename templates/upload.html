@@ -85,7 +85,10 @@
                 body: formData
             });
             if (response.ok) {
-                alert('Видео успешно загружено!');
+                alert('Видео и аватарка успешно загружены!');
+            } else {
+                const result = await response.json();
+                alert(`Ошибка: ${result.message}`);
             }
         });
     </script>
