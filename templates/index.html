@@ -16,46 +16,45 @@
             background-color: #1e1e1e;
             color: #f4f4f4;
         }
-        .header {
-            display: flex;
-            align-items: center;
-            padding: 10px;
-            background-color: #000000;  /* Фиолетовый */
-        }
-        .header img {
-            height: 100px;
-            margin-right: 20px;
-        }
         nav a {
             margin: 0 15px;
             text-decoration: none;
-            color: #4CAF50;
+            color: #673AB7;
         }
         nav a:hover {
-            color: #45a049;
+            color: #5E35B1;
         }
         .theme-switcher {
             cursor: pointer;
             padding: 10px 20px;
-            background-color: #4CAF50;
+            background-color: #673AB7;
             color: white;
             border: none;
             border-radius: 4px;
             margin: 20px;
         }
         .theme-switcher:hover {
-            background-color: #45a049;
+            background-color: #5E35B1;
+        }
+        .logo {
+            width: 150px;
+            margin: 20px auto;
         }
     </style>
 </head>
 <body class="light-mode">
-    <div class="header">
-        <img src="/static/logo.png" alt="VidGalaxy Logo">
-    </div>
-    <button class="theme-switcher" onclick="toggleTheme()">Переключить тему</button>
+    <img src="логотип.png" alt="Логотип VidGalaxy" class="logo">
+    <h1>Добро пожаловать в VidGalaxy</h1>
     <nav>
-        <a href="/upload">Загрузить видео</a>
-        <a href="/videos">Просмотреть видео</a>
+        <a href="/upload">Загрузить Видео</a>
+        <a href="/videos">Смотреть Видео</a>
     </nav>
+    <button class="theme-switcher" onclick="toggleTheme()">Переключить тему</button>
+    <script>
+        function toggleTheme() {
+            document.body.classList.toggle('dark-mode');
+            document.body.classList.toggle('light-mode');
+        }
+    </script>
 </body>
 </html>
