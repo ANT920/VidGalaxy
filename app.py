@@ -64,7 +64,7 @@ def upload():
     file.save(file_path)
 
     avatar_url = None
-    if avatar:
+    if (avatar):
         avatar_path = os.path.join(AVATAR_FOLDER, avatar.filename)
         avatar.save(avatar_path)
         avatar_url = f'/avatars/{avatar.filename}'
@@ -145,4 +145,3 @@ if __name__ == '__main__':
     init_db()
     port = int(os.environ.get("PORT", 8000))
     app.run(host='0.0.0.0', port=port)
-
