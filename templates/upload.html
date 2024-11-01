@@ -61,13 +61,13 @@
     <img src="static/logo.png" alt="Логотип VidGalaxy" class="logo">
     <h1>Загрузить Видео</h1>
     <button class="theme-switcher" onclick="toggleTheme()">Переключить тему</button>
-    <form id="uploadForm" enctype="multipart/form-data">
-        <input type="text" id="usernameInput" name="username" placeholder="Введите ваш никнейм">
-        <input type="text" id="titleInput" name="title" placeholder="Введите название видео">
-        <input type="file" id="videoInput" name="video" accept="video/*">
-        <input type="file" id="avatarInput" name="avatar" accept="image/*" placeholder="Загрузить аватарку">
-        <button type="submit">Загрузить</button>
-    </form>
+ <form action="/upload" method="post" enctype="multipart/form-data">
+    <input type="text" name="username" placeholder="Username">
+    <input type="text" name="title" placeholder="Title">
+    <input type="file" name="video">
+    <input type="file" name="avatar">
+    <button type="submit">Upload</button>
+ </form>
     <script>
         function toggleTheme() {
             document.body.classList.toggle('dark-mode');
