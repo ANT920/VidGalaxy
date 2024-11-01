@@ -44,12 +44,15 @@ def videos_page():
 
 @app.route('/videos_data', methods=['GET'])
 def get_videos():
-    conn = sqlite3.connect('vidgalaxy.db')
-    c = conn.cursor()
-    c.execute("SELECT url, username, title, avatarUrl FROM videos ORDER BY timestamp DESC")
-    videos = [{'url': row[0], 'username': row[1], 'title': row[2], 'avatarUrl': row[3]} for row in c.fetchall()]
-    conn.close()
-    return jsonify({'videos': videos})
+    try:
+        conn = sqlite3.connect('vidgalaxy.db')
+        c = conn.cursor()
+        c.execute("SELECT url, username, title, avatarUrl FROM videos ORDER BY timestamp DESC")
+        videos = [{'url': row[0], 'username': row[1], 'title': row[2], 'avatarUrl': row[3]} for row in c.fetchall()]
+        conn.close()
+        return jsonify({'videos': videos})
+    except Exception as e:
+        return jsonify({'message': str(e)}), 500
 
 @app.route('/upload', methods=['POST'])
 def upload():
@@ -68,7 +71,7 @@ def upload():
         file.save(file_path)
 
         avatar_url = None
-        if (avatar):
+        if avatar:
             avatar_path = os.path.join(AVATAR_FOLDER, avatar.filename)
             avatar.save(avatar_path)
             avatar_url = f'/avatars/{avatar.filename}'
