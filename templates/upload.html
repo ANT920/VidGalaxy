@@ -1,96 +1,60 @@
-<!doctype html>
-<html lang="ru">
+<!DOCTYPE html>
+<html lang="en">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Загрузить Видео</title>
-    <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Open+Sans:wght@400;700&display=swap">
+    <title>Upload Video</title>
     <style>
-        body.light-mode {
-            font-family: 'Open Sans', sans-serif;
+        /* Добавим немного стилей для улучшения внешнего вида */
+        body {
+            font-family: Arial, sans-serif;
             background-color: #f4f4f4;
-            color: #333;
+            margin: 0;
+            padding: 0;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            height: 100vh;
         }
-        body.dark-mode {
-            font-family: 'Open Sans', sans-serif;
-            background-color: #1e1e1e;
-            color: #f4f4f4;
-        }
-        .logo {
-            width: 150px;
-            margin: 20px auto;
+        .container {
+            background-color: #fff;
+            padding: 20px;
+            border-radius: 8px;
+            box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
         }
         form {
-            margin-bottom: 20px;
             display: flex;
             flex-direction: column;
-            align-items: center;
-            background-color: #D1C4E9;
-            padding: 20px;
-            border-radius: 10px;
         }
-        input[type="file"], input[type="text"], button {
-            margin: 5px 0;
+        input, button {
+            margin-bottom: 10px;
             padding: 10px;
-            border: 1px solid #673AB7;
-            border-radius: 4px;
-        }
-        button {
-            background-color: #673AB7;
-            color: white;
-            cursor: pointer;
-        }
-        button:hover {
-            background-color: #5E35B1;
-        }
-        .theme-switcher {
-            cursor: pointer;
-            padding: 10px 20px;
-            background-color: #673AB7;
-            color: white;
-            border: none;
-            border-radius: 4px;
-            margin: 20px;
-        }
-        .theme-switcher:hover {
-            background-color: #5E35B1;
+            font-size: 16px;
         }
     </style>
 </head>
-<body class="light-mode">
-    <img src="static/logo.png" alt="Логотип VidGalaxy" class="logo">
-    <h1>Загрузить Видео</h1>
-    <button class="theme-switcher" onclick="toggleTheme()">Переключить тему</button>
- <form action="/upload" method="post" enctype="multipart/form-data">
-    <input type="text" name="username" placeholder="Username">
-    <input type="text" name="title" placeholder="Title">
-    <input type="file" name="video">
-    <input type="file" name="avatar">
-    <button type="submit">Upload</button>
- </form>
+<body>
+    <div class="container">
+        <h2>Upload Video</h2>
+        <form id="uploadForm" action="/upload" method="post" enctype="multipart/form-data">
+            <input type="text" name="username" placeholder="Username" required>
+            <input type="text" name="title" placeholder="Title" required>
+            <input type="file" name="video" required>
+            <input type="file" name="avatar">
+            <button type="submit">Upload</button>
+        </form>
+    </div>
     <script>
-        function toggleTheme() {
-            document.body.classList.toggle('dark-mode');
-            document.body.classList.toggle('light-mode');
-        }
-        document.getElementById('uploadForm').addEventListener('submit', async function(event) {
+        document.getElementById('uploadForm').onsubmit = async function(event) {
             event.preventDefault();
-            const formData = new FormData();
-            formData.append('username', document.getElementById('usernameInput').value);
-            formData.append('title', document.getElementById('titleInput').value);
-            formData.append('video', document.getElementById('videoInput').files[0]);
-            formData.append('avatar', document.getElementById('avatarInput').files[0]);
+            const formData = new FormData(this);
             const response = await fetch('/upload', {
                 method: 'POST',
                 body: formData
             });
-            if (response.ok) {
-                alert('Видео и аватарка успешно загружены!');
-            } else {
-                const result = await response.json();
-                alert(`Ошибка: ${result.message}`);
-            }
-        });
+            const result = await response.json();
+            alert(result.message);
+        };
     </script>
 </body>
 </html>
