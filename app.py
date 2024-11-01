@@ -5,8 +5,11 @@ import os
 app = Flask(__name__)
 
 UPLOAD_FOLDER = 'uploads'
+AVATAR_FOLDER = 'avatars'
 if not os.path.exists(UPLOAD_FOLDER):
     os.makedirs(UPLOAD_FOLDER)
+if not os.path.exists(AVATAR_FOLDER):
+    os.makedirs(AVATAR_FOLDER)
 
 # Функция инициализации базы данных
 def init_db():
@@ -48,14 +51,22 @@ def upload():
     file = request.files['video']
     username = request.form['username']
     title = request.form['title']
-    avatarUrl = request.form.get('avatarUrl')  # Получаем URL аватарки из формы
+    avatar = request.files.get('avatar')
+
     file_path = os.path.join(UPLOAD_FOLDER, file.filename)
     file.save(file_path)
+
+    avatar_url = None
+    if avatar:
+        avatar_path = os.path.join(AVATAR_FOLDER, avatar.filename)
+        avatar.save(avatar_path)
+        avatar_url = f'/avatars/{avatar.filename}'
+
     video_data = {
         'url': f'/uploads/{file.filename}',
         'username': username,
         'title': title,
-        'avatarUrl': avatarUrl,
+        'avatarUrl': avatar_url,
         'timestamp': os.path.getmtime(file_path)
     }
     conn = sqlite3.connect('database.db')
@@ -69,6 +80,10 @@ def upload():
 @app.route('/uploads/<filename>')
 def uploaded_file(filename):
     return send_from_directory(UPLOAD_FOLDER, filename)
+
+@app.route('/avatars/<filename>')
+def uploaded_avatar(filename):
+    return send_from_directory(AVATAR_FOLDER, filename)
 
 if __name__ == '__main__':
     init_db()
