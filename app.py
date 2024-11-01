@@ -53,39 +53,42 @@ def get_videos():
 
 @app.route('/upload', methods=['POST'])
 def upload():
-    if 'video' not in request.files:
-        return jsonify({'message': 'Нет файла видео'}), 400
-    file = request.files['video']
-    if file.filename == '':
-        return jsonify({'message': 'Пожалуйста, выберите файл'}), 400
-    
-    username = request.form['username']
-    title = request.form['title']
-    avatar = request.files.get('avatar')
+    try:
+        if 'video' not in request.files:
+            return jsonify({'message': 'Нет файла видео'}), 400
+        file = request.files['video']
+        if file.filename == '':
+            return jsonify({'message': 'Пожалуйста, выберите файл'}), 400
+        
+        username = request.form['username']
+        title = request.form['title']
+        avatar = request.files.get('avatar')
 
-    file_path = os.path.join(UPLOAD_FOLDER, file.filename)
-    file.save(file_path)
+        file_path = os.path.join(UPLOAD_FOLDER, file.filename)
+        file.save(file_path)
 
-    avatar_url = None
-    if avatar:
-        avatar_path = os.path.join(AVATAR_FOLDER, avatar.filename)
-        avatar.save(avatar_path)
-        avatar_url = f'/avatars/{avatar.filename}'
+        avatar_url = None
+        if avatar:
+            avatar_path = os.path.join(AVATAR_FOLDER, avatar.filename)
+            avatar.save(avatar_path)
+            avatar_url = f'/avatars/{avatar.filename}'
 
-    video_data = {
-        'url': f'/uploads/{file.filename}',
-        'username': username,
-        'title': title,
-        'avatarUrl': avatar_url,
-        'timestamp': os.path.getmtime(file_path)
-    }
-    conn = sqlite3.connect('vidgalaxy.db')
-    c = conn.cursor()
-    c.execute("INSERT INTO videos (url, username, title, avatarUrl, timestamp) VALUES (?, ?, ?, ?, ?)",
-              (video_data['url'], video_data['username'], video_data['title'], video_data['avatarUrl'], video_data['timestamp']))
-    conn.commit()
-    conn.close()
-    return redirect(url_for('videos_page'))  # Перенаправление на страницу видео после загрузки
+        video_data = {
+            'url': f'/uploads/{file.filename}',
+            'username': username,
+            'title': title,
+            'avatarUrl': avatar_url,
+            'timestamp': os.path.getmtime(file_path)
+        }
+        conn = sqlite3.connect('vidgalaxy.db')
+        c = conn.cursor()
+        c.execute("INSERT INTO videos (url, username, title, avatarUrl, timestamp) VALUES (?, ?, ?, ?, ?)",
+                  (video_data['url'], video_data['username'], video_data['title'], video_data['avatarUrl'], video_data['timestamp']))
+        conn.commit()
+        conn.close()
+        return jsonify({'message': 'Видео успешно загружено'}), 200
+    except Exception as e:
+        return jsonify({'message': str(e)}), 500
 
 @app.route('/uploads/<filename>')
 def uploaded_file(filename):
