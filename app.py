@@ -6,14 +6,13 @@ app = Flask(__name__)
 
 UPLOAD_FOLDER = 'uploads'
 AVATAR_FOLDER = 'avatars'
-DATABASE_URL = os.environ.get('DATABASE_URL')  # Использование переменной среды для подключения к базе данных
+DATABASE_URL = os.environ.get('DATABASE_URL')
 
 if not os.path.exists(UPLOAD_FOLDER):
     os.makedirs(UPLOAD_FOLDER)
 if not os.path.exists(AVATAR_FOLDER):
     os.makedirs(AVATAR_FOLDER)
 
-# Функция инициализации базы данных
 def init_db():
     conn = psycopg2.connect(DATABASE_URL)
     c = conn.cursor()
@@ -108,7 +107,6 @@ def register_user():
             
             print("Received registration data:", data)
 
-            # Хешируем пароль
             hashed_password = hashlib.sha256(password.encode()).hexdigest()
             print("Registering user:", email, hashed_password)
             
@@ -136,7 +134,6 @@ def login_user():
         email = data['email']
         password = data['password']
         
-        # Хешируем пароль для проверки
         hashed_password = hashlib.sha256(password.encode()).hexdigest()
         print("Login attempt:", email, hashed_password)
         
@@ -167,5 +164,5 @@ def profile():
 
 if __name__ == '__main__':
     init_db()
-    port = int(os.environ.get("PORT", 8000))
+    port = int(os.environ.get('PORT', 8000))
     app.run(host='0.0.0.0', port=port)
