@@ -17,18 +17,8 @@ if not os.path.exists(AVATAR_FOLDER):
 def init_db():
     conn = psycopg2.connect(DATABASE_URL)
     c = conn.cursor()
-    c.execute('''CREATE TABLE IF NOT EXISTS videos
-                 (id SERIAL PRIMARY KEY,
-                 url TEXT,
-                 username TEXT,
-                 title TEXT,
-                 avatarUrl TEXT,
-                 timestamp REAL)''')
-    c.execute('''CREATE TABLE IF NOT EXISTS users
-                 (id SERIAL PRIMARY KEY,
-                 email TEXT UNIQUE,
-                 password TEXT,
-                 username TEXT)''')
+    with open('schema.sql', 'r') as f:
+        c.execute(f.read())
     conn.commit()
     conn.close()
 
