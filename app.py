@@ -119,9 +119,9 @@ def register_user():
     return render_template('register.html')
 
 @app.route('/login', methods=['GET', 'POST'])
-def login_page():
+def login_user():
     if request.method == 'POST':
-        data = request.json
+        data = request.form
         email = data['email']
         password = data['password']
         
@@ -135,11 +135,11 @@ def login_page():
         conn.close()
         
         if user:
-            return jsonify({'status': 'success', 'message': 'Вход успешен.', 'user_id': user[0], 'username': user[1]})
+            # Перенаправляем на страницу профиля пользователя
+            return render_template('profile.html', user_id=user[0], username=user[1])
         else:
-            return jsonify({'status': 'fail', 'message': 'Неверный email или пароль.'}), 401
-    else:
-        return render_template('login.html')
+            return render_template('login.html', message='Неверный email или пароль.')
+    return render_template('login.html')
 
 if __name__ == '__main__':
     init_db()
