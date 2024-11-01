@@ -40,20 +40,61 @@
             width: 150px;
             margin: 20px auto;
         }
+        .recommendations {
+            margin: 20px;
+        }
+        .video-recommendation {
+            margin: 10px 0;
+            padding: 10px;
+            background-color: #D1C4E9;
+            border-radius: 8px;
+            box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+        }
+        .video-recommendation h3, .video-recommendation p {
+            margin: 0;
+        }
     </style>
 </head>
 <body class="light-mode">
     <img src="static/logo.png" alt="Логотип VidGalaxy" class="logo">
     <nav>
         <a href="/upload">Загрузить Видео</a>
-        <a href="/videos">Смотреть Видео</a>
+        <a href="/videos"Новые Видео</a>
     </nav>
     <button class="theme-switcher" onclick="toggleTheme()">Переключить тему</button>
+    <div class="recommendations">
+        <h2>Рекомендации</h2>
+        <div id="recommendationContainer"></div>
+    </div>
     <script>
         function toggleTheme() {
             document.body.classList.toggle('dark-mode');
             document.body.classList.toggle('light-mode');
         }
+
+        async function fetchRecommendations() {
+            const response = await fetch('/recommendations_data');
+            const data = await response.json();
+            displayRecommendations(data.videos);
+        }
+
+        function displayRecommendations(videos) {
+            const container = document.getElementById('recommendationContainer');
+            container.innerHTML = '';
+            videos.forEach(video => {
+                const videoDiv = document.createElement('div');
+                videoDiv.className = 'video-recommendation';
+                const title = document.createElement('h3');
+                title.textContent = video.title;
+                const uploader = document.createElement('p');
+                uploader.textContent = `Загружено: ${video.username}`;
+                videoDiv.appendChild(title);
+                videoDiv.appendChild(uploader);
+                container.appendChild(videoDiv);
+            });
+        }
+
+        window.onload = fetchRecommendations;
     </script>
 </body>
 </html>
