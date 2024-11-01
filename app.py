@@ -120,7 +120,7 @@ def register_user():
         except Exception as e:
             print("Error during registration:", str(e))  # вывод ошибки для отладки
             return render_template('register.html', message=str(e))
-    return render_template('register)
+    return render_template('register')
 
 @app.route('/login', methods=['GET', 'POST'])
 def login_user():
