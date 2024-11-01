@@ -64,7 +64,7 @@ def upload():
     file.save(file_path)
 
     avatar_url = None
-    if avatar:
+    if (avatar):
         avatar_path = os.path.join(AVATAR_FOLDER, avatar.filename)
         avatar.save(avatar_path)
         avatar_url = f'/avatars/{avatar.filename}'
@@ -92,9 +92,11 @@ def uploaded_file(filename):
 def uploaded_avatar(filename):
     return send_from_directory(AVATAR_FOLDER, filename)
 
-@app.route('/register', methods=['POST'])
-def register_user():
-    try:
+@app.route('/register', methods=['GET', 'POST'])
+def register_page():
+    if request.method == 'GET':
+        return render_template('register.html')
+    if request.method == 'POST':
         data = request.json
         email = data['email']
         password = data['password']
@@ -105,22 +107,25 @@ def register_user():
         
         conn = sqlite3.connect(DATABASE)
         c = conn.cursor()
-        c.execute("INSERT INTO users (email, password, username) VALUES (?, ?, ?)",
-                  (email, hashed_password, username))
-        conn.commit()
-        conn.close()
+        try:
+            c.execute("INSERT INTO users (email, password, username) VALUES (?, ?, ?)",
+                      (email, hashed_password, username))
+            conn.commit()
+        except sqlite3.IntegrityError:
+            return jsonify({'status': 'fail', 'message': 'Этот email уже зарегистрирован.'}), 400
+        finally:
+            conn.close()
         
         return jsonify({'status': 'success', 'message': 'Регистрация успешна.'})
-    except sqlite3.IntegrityError:
-        return jsonify({'status': 'fail', 'message': 'Этот email уже зарегистрирован.'}), 400
-    except Exception as e:
-        return jsonify({'status': 'fail', 'message': str(e)}), 500
 
-@app.route('/login', methods=['POST'])
-def login_user():
-    data = request.json
-    email = data['email']
-    password = data['password']
+@app.route('/login', methods=['GET', 'POST'])
+def login_page():
+    if request.method == 'GET':
+        return render_template('login.html')
+    if request.method == 'POST':
+        data = request.json
+        email = data['email']
+        password = data['password']
     
     # Хешируем пароль для проверки
     hashed_password = hashlib.sha256(password.encode()).hexdigest()
