@@ -1,4 +1,4 @@
-import psycopg2
+import sqlite3
 from flask import Flask, render_template, request, jsonify, send_from_directory
 import os
 
@@ -6,7 +6,6 @@ app = Flask(__name__)
 
 UPLOAD_FOLDER = 'uploads'
 AVATAR_FOLDER = 'avatars'
-DATABASE_URL = os.environ.get('DATABASE_URL')
 
 if not os.path.exists(UPLOAD_FOLDER):
     os.makedirs(UPLOAD_FOLDER)
@@ -14,17 +13,17 @@ if not os.path.exists(AVATAR_FOLDER):
     os.makedirs(AVATAR_FOLDER)
 
 def init_db():
-    conn = psycopg2.connect(DATABASE_URL)
+    conn = sqlite3.connect('vidgalaxy.db')
     c = conn.cursor()
     c.execute('''CREATE TABLE IF NOT EXISTS videos
-                 (id SERIAL PRIMARY KEY,
+                 (id INTEGER PRIMARY KEY,
                  url TEXT,
                  username TEXT,
                  title TEXT,
                  avatarUrl TEXT,
                  timestamp REAL)''')
     c.execute('''CREATE TABLE IF NOT EXISTS users
-                 (id SERIAL PRIMARY KEY,
+                 (id INTEGER PRIMARY KEY,
                  email TEXT UNIQUE,
                  password TEXT,
                  username TEXT)''')
@@ -45,7 +44,7 @@ def videos_page():
 
 @app.route('/videos_data', methods=['GET'])
 def get_videos():
-    conn = psycopg2.connect(DATABASE_URL)
+    conn = sqlite3.connect('vidgalaxy.db')
     c = conn.cursor()
     c.execute("SELECT url, username, title, avatarUrl FROM videos ORDER BY timestamp DESC")
     videos = [{'url': row[0], 'username': row[1], 'title': row[2], 'avatarUrl': row[3]} for row in c.fetchall()]
@@ -80,9 +79,9 @@ def upload():
         'avatarUrl': avatar_url,
         'timestamp': os.path.getmtime(file_path)
     }
-    conn = psycopg2.connect(DATABASE_URL)
+    conn = sqlite3.connect('vidgalaxy.db')
     c = conn.cursor()
-    c.execute("INSERT INTO videos (url, username, title, avatarUrl, timestamp) VALUES (%s, %s, %s, %s, %s)",
+    c.execute("INSERT INTO videos (url, username, title, avatarUrl, timestamp) VALUES (?, ?, ?, ?, ?)",
               (video_data['url'], video_data['username'], video_data['title'], video_data['avatarUrl'], video_data['timestamp']))
     conn.commit()
     conn.close()
@@ -107,18 +106,19 @@ def register_user():
             
             print("Received registration data:", data)
 
+            # Хешируем пароль
             hashed_password = hashlib.sha256(password.encode()).hexdigest()
             print("Registering user:", email, hashed_password)
             
-            conn = psycopg2.connect(DATABASE_URL)
+            conn = sqlite3.connect('vidgalaxy.db')
             c = conn.cursor()
-            c.execute("INSERT INTO users (email, password, username) VALUES (%s, %s, %s)",
+            c.execute("INSERT INTO users (email, password, username) VALUES (?, ?, ?)",
                       (email, hashed_password, username))
             conn.commit()
             conn.close()
             
             return redirect(url_for('login_user'))
-        except psycopg2.IntegrityError:
+        except sqlite3.IntegrityError:
             print("IntegrityError: Этот email уже зарегистрирован.")
             return render_template('register.html', message='Этот email уже зарегистрирован.')
         except Exception as e:
@@ -134,12 +134,13 @@ def login_user():
         email = data['email']
         password = data['password']
         
+        # Хешируем пароль для проверки
         hashed_password = hashlib.sha256(password.encode()).hexdigest()
         print("Login attempt:", email, hashed_password)
         
-        conn = psycopg2.connect(DATABASE_URL)
+        conn = sqlite3.connect('vidgalaxy.db')
         c = conn.cursor()
-        c.execute("SELECT id, username FROM users WHERE email = %s AND password = %s", (email, hashed_password))
+        c.execute("SELECT id, username FROM users WHERE email = ? AND password = ?", (email, hashed_password))
         user = c.fetchone()
         conn.close()
         
