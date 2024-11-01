@@ -103,6 +103,7 @@ def register_user():
             
             # Хешируем пароль
             hashed_password = hashlib.sha256(password.encode()).hexdigest()
+            print("Registered hashed password:", hashed_password)  # вывод хешированного пароля
             
             conn = sqlite3.connect(DATABASE)
             c = conn.cursor()
@@ -111,7 +112,6 @@ def register_user():
             conn.commit()
             conn.close()
             
-            print("Registered hashed password:", hashed_password)  # отладка
             return render_template('login.html', message='Регистрация успешна, пожалуйста, войдите.')
         except sqlite3.IntegrityError:
             return render_template('register.html', message='Этот email уже зарегистрирован.')
@@ -128,6 +128,7 @@ def login_user():
         
         # Хешируем пароль для проверки
         hashed_password = hashlib.sha256(password.encode()).hexdigest()
+        print("Login hashed password:", hashed_password)  # вывод хешированного пароля при входе
         
         conn = sqlite3.connect(DATABASE)
         c = conn.cursor()
@@ -135,8 +136,6 @@ def login_user():
         user = c.fetchone()
         conn.close()
         
-        print("Login hashed password:", hashed_password)  # отладка
-
         if user:
             # Перенаправляем на страницу профиля пользователя
             return render_template('profile.html', user_id=user[0], username=user[1])
