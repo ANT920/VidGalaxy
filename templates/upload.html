@@ -1,13 +1,14 @@
 <!DOCTYPE html>
-<html lang="en">
+<html lang="ru">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Upload Video</title>
+    <title>Загрузка видео</title>
     <style>
         body {
             font-family: Arial, sans-serif;
             background-color: #f0f0f0;
+            color: #333;
             margin: 0;
             padding: 0;
             display: flex;
@@ -21,6 +22,7 @@
             border-radius: 8px;
             box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
             text-align: center;
+            width: 300px;
         }
         form {
             display: flex;
@@ -31,6 +33,7 @@
             margin-bottom: 10px;
             padding: 10px;
             font-size: 16px;
+            width: 100%;
         }
         .theme-toggle {
             background-color: #6200ea;
@@ -39,24 +42,28 @@
             padding: 10px;
             border-radius: 4px;
             cursor: pointer;
+            position: absolute;
+            top: 10px;
+            right: 10px;
         }
         .logo {
             width: 100px;
+            margin-bottom: 20px;
         }
     </style>
 </head>
 <body>
+    <button class="theme-toggle" onclick="toggleTheme()">Сменить тему</button>
     <div class="container">
         <img src="/static/logo.png" class="logo" alt="VidGalaxy">
-        <h2>Upload Video</h2>
+        <h2>Загрузить видео</h2>
         <form id="uploadForm" action="/upload" method="post" enctype="multipart/form-data">
-            <input type="text" name="username" placeholder="Username" required>
-            <input type="text" name="title" placeholder="Title" required>
+            <input type="text" name="username" placeholder="Имя пользователя" required>
+            <input type="text" name="title" placeholder="Название" required>
             <input type="file" name="video" required>
             <input type="file" name="avatar">
-            <button type="submit">Upload</button>
+            <button type="submit">Загрузить</button>
         </form>
-        <button class="theme-toggle" onclick="toggleTheme()">Toggle Theme</button>
     </div>
     <script>
         document.getElementById('uploadForm').onsubmit = async function(event) {
@@ -72,7 +79,9 @@
 
         function toggleTheme() {
             const body = document.body;
-            body.style.backgroundColor = body.style.backgroundColor === 'white' ? '#f0f0f0' : 'white';
+            const isLight = body.style.backgroundColor === 'white';
+            body.style.backgroundColor = isLight ? '#f0f0f0' : 'white';
+            body.style.color = isLight ? '#333' : '#000';
         }
     </script>
 </body>
