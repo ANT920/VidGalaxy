@@ -5,13 +5,10 @@ import os
 app = Flask(__name__)
 
 UPLOAD_FOLDER = 'uploads'
-AVATAR_FOLDER = 'avatars'
 if not os.path.exists(UPLOAD_FOLDER):
     os.makedirs(UPLOAD_FOLDER)
-if not os.path.exists(AVATAR_FOLDER):
-    os.makedirs(AVATAR_FOLDER)
 
-# Инициализация базы данных
+# Функция инициализации базы данных
 def init_db():
     conn = sqlite3.connect('database.db')
     c = conn.cursor()
@@ -20,11 +17,8 @@ def init_db():
                  url TEXT,
                  username TEXT,
                  title TEXT,
+                 avatarUrl TEXT,
                  timestamp REAL)''')
-    c.execute('''CREATE TABLE IF NOT EXISTS users
-                 (id INTEGER PRIMARY KEY AUTOINCREMENT,
-                 username TEXT,
-                 avatar TEXT)''')
     conn.commit()
     conn.close()
 
@@ -44,11 +38,8 @@ def videos_page():
 def get_videos():
     conn = sqlite3.connect('database.db')
     c = conn.cursor()
-    c.execute('''SELECT videos.url, videos.username, videos.title, users.avatar
-                 FROM videos
-                 JOIN users ON videos.username = users.username
-                 ORDER BY videos.timestamp DESC''')
-    videos = [{'url': row[0], 'username': row[1], 'title': row[2], 'avatar': row[3]} for row in c.fetchall()]
+    c.execute("SELECT url, username, title, avatarUrl FROM videos ORDER BY timestamp DESC")
+    videos = [{'url': row[0], 'username': row[1], 'title': row[2], 'avatarUrl': row[3]} for row in c.fetchall()]
     conn.close()
     return jsonify({'videos': videos})
 
@@ -57,44 +48,27 @@ def upload():
     file = request.files['video']
     username = request.form['username']
     title = request.form['title']
+    avatarUrl = request.form.get('avatarUrl')  # Получаем URL аватарки из формы
     file_path = os.path.join(UPLOAD_FOLDER, file.filename)
     file.save(file_path)
     video_data = {
         'url': f'/uploads/{file.filename}',
         'username': username,
         'title': title,
+        'avatarUrl': avatarUrl,
         'timestamp': os.path.getmtime(file_path)
     }
     conn = sqlite3.connect('database.db')
     c = conn.cursor()
-    c.execute("INSERT INTO videos (url, username, title, timestamp) VALUES (?, ?, ?, ?)",
-              (video_data['url'], video_data['username'], video_data['title'], video_data['timestamp']))
+    c.execute("INSERT INTO videos (url, username, title, avatarUrl, timestamp) VALUES (?, ?, ?, ?, ?)",
+              (video_data['url'], video_data['username'], video_data['title'], video_data['avatarUrl'], video_data['timestamp']))
     conn.commit()
     conn.close()
     return jsonify({'url': f'/uploads/{file.filename}'})
 
-@app.route('/upload_avatar', methods=['POST'])
-def upload_avatar():
-    file = request.files['avatar']
-    username = request.form['username']
-    file_path = os.path.join(AVATAR_FOLDER, file.filename)
-    file.save(file_path)
-    avatar_url = f'/avatars/{file.filename}'
-    conn = sqlite3.connect('database.db')
-    c = conn.cursor()
-    c.execute("INSERT OR REPLACE INTO users (username, avatar) VALUES (?, ?)",
-              (username, avatar_url))
-    conn.commit()
-    conn.close()
-    return jsonify({'avatar': avatar_url})
-
 @app.route('/uploads/<filename>')
 def uploaded_file(filename):
     return send_from_directory(UPLOAD_FOLDER, filename)
-
-@app.route('/avatars/<filename>')
-def uploaded_avatar(filename):
-    return send_from_directory(AVATAR_FOLDER, filename)
 
 if __name__ == '__main__':
     init_db()
