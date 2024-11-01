@@ -102,6 +102,8 @@ def register_user():
             password = data['password']
             username = data['username']
             
+            print("Received registration data:", data)  # вывод отладочной информации
+
             # Хешируем пароль
             hashed_password = hashlib.sha256(password.encode()).hexdigest()
             print("Registering user:", email, hashed_password)  # вывод информации для отладки
@@ -120,12 +122,13 @@ def register_user():
         except Exception as e:
             print("Error during registration:", str(e))  # вывод ошибки для отладки
             return render_template('register.html', message=str(e))
-    return render_template('register')
+    return render_template('register.html')
 
 @app.route('/login', methods=['GET', 'POST'])
 def login_user():
     if request.method == 'POST':
         data = request.form
+        print("Received login data:", data)  # вывод отладочной информации
         email = data['email']
         password = data['password']
         
