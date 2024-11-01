@@ -64,7 +64,7 @@ def upload():
     file.save(file_path)
 
     avatar_url = None
-    if (avatar):
+    if avatar:
         avatar_path = os.path.join(AVATAR_FOLDER, avatar.filename)
         avatar.save(avatar_path)
         avatar_url = f'/avatars/{avatar.filename}'
@@ -111,6 +111,7 @@ def register_user():
             conn.commit()
             conn.close()
             
+            print("Registered hashed password:", hashed_password)  # отладка
             return render_template('login.html', message='Регистрация успешна, пожалуйста, войдите.')
         except sqlite3.IntegrityError:
             return render_template('register.html', message='Этот email уже зарегистрирован.')
@@ -134,6 +135,8 @@ def login_user():
         user = c.fetchone()
         conn.close()
         
+        print("Login hashed password:", hashed_password)  # отладка
+
         if user:
             # Перенаправляем на страницу профиля пользователя
             return render_template('profile.html', user_id=user[0], username=user[1])
