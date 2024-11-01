@@ -97,6 +97,74 @@ def uploaded_file(filename):
 def uploaded_avatar(filename):
     return send_from_directory(AVATAR_FOLDER, filename)
 
+@app.route('/register', methods=['GET', 'POST'])
+def register_user():
+    if request.method == 'POST':
+        try:
+            data = request.form
+            email = data['email']
+            password = data['password']
+            username = data['username']
+            
+            print("Received registration data:", data)
+
+            # Хешируем пароль
+            hashed_password = hashlib.sha256(password.encode()).hexdigest()
+            print("Registering user:", email, hashed_password)
+            
+            conn = sqlite3.connect(DATABASE)
+            c = conn.cursor()
+            c.execute("INSERT INTO users (email, password, username) VALUES (?, ?, ?)",
+                      (email, hashed_password, username))
+            conn.commit()
+            conn.close()
+            
+            return redirect(url_for('login_user'))
+        except sqlite3.IntegrityError:
+            print("IntegrityError: Этот email уже зарегистрирован.")
+            return render_template('register.html', message='Этот email уже зарегистрирован.')
+        except Exception as e:
+            print("Error during registration:", str(e))
+            return render_template('register.html', message=str(e))
+    return render_template('register.html')
+
+@app.route('/login', methods=['GET', 'POST'])
+def login_user():
+    if request.method == 'POST':
+        data = request.form
+        print("Received login data:", data)
+        email = data['email']
+        password = data['password']
+        
+        # Хешируем пароль для проверки
+        hashed_password = hashlib.sha256(password.encode()).hexdigest()
+        print("Login attempt:", email, hashed_password)
+        
+        conn = sqlite3.connect(DATABASE)
+        c = conn.cursor()
+        c.execute("SELECT id, username FROM users WHERE email = ? AND password = ?", (email, hashed_password))
+        user = c.fetchone()
+        conn.close()
+        
+        if user:
+            print("Login successful:", user)
+            session['user_id'] = user[0]
+            session['username'] = user[1]
+            return redirect(url_for('profile'))
+        else:
+            print("Login failed: Неверный email или пароль.")
+            return render_template('login.html', message='Неверный email или пароль.')
+    return render_template('login.html')
+
+@app.route('/profile')
+def profile():
+    if 'user_id' in session:
+        user_id = session['user_id']
+        username = session['username']
+        return render_template('profile.html', user_id=user_id, username=username)
+    else:
+        return redirect(url_for('login_user'))
+
 if __name__ == '__main__':
     init_db()
     port = int(os.environ.get("PORT", 8000))
