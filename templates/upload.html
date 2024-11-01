@@ -1,88 +1,93 @@
-<!DOCTYPE html>
+<!doctype html>
 <html lang="ru">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Загрузка видео</title>
+    <title>Загрузить Видео</title>
+    <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Open+Sans:wght@400;700&display=swap">
     <style>
-        body {
-            font-family: Arial, sans-serif;
-            background-color: #f0f0f0;
+        body.light-mode {
+            font-family: 'Open Sans', sans-serif;
+            background-color: #f4f4f4;
             color: #333;
-            margin: 0;
-            padding: 0;
-            display: flex;
-            justify-content: center;
-            align-items: center;
-            height: 100vh;
         }
-        .container {
-            background-color: #fff;
-            padding: 20px;
-            border-radius: 8px;
-            box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
-            text-align: center;
-            width: 300px;
+        body.dark-mode {
+            font-family: 'Open Sans', sans-serif;
+            background-color: #1e1e1e;
+            color: #f4f4f4;
+        }
+        .logo {
+            width: 150px;
+            margin: 20px auto;
         }
         form {
+            margin-bottom: 20px;
             display: flex;
             flex-direction: column;
             align-items: center;
+            background-color: #D1C4E9;
+            padding: 20px;
+            border-radius: 10px;
         }
-        input, button {
-            margin-bottom: 10px;
+        input[type="file"], input[type="text"], button {
+            margin: 5px 0;
             padding: 10px;
-            font-size: 16px;
-            width: 100%;
+            border: 1px solid #673AB7;
+            border-radius: 4px;
         }
-        .theme-toggle {
-            background-color: #6200ea;
+        button {
+            background-color: #673AB7;
+            color: white;
+            cursor: pointer;
+        }
+        button:hover {
+            background-color: #5E35B1;
+        }
+        .theme-switcher {
+            cursor: pointer;
+            padding: 10px 20px;
+            background-color: #673AB7;
             color: white;
             border: none;
-            padding: 10px;
             border-radius: 4px;
-            cursor: pointer;
-            position: absolute;
-            top: 10px;
-            right: 10px;
+            margin: 20px;
         }
-        .logo {
-            width: 100px;
-            margin-bottom: 20px;
+        .theme-switcher:hover {
+            background-color: #5E35B1;
         }
     </style>
 </head>
-<body>
-    <button class="theme-toggle" onclick="toggleTheme()">Сменить тему</button>
-    <div class="container">
-        <img src="/static/logo.png" class="logo" alt="VidGalaxy">
-        <h2>Загрузить видео</h2>
-        <form id="uploadForm" action="/upload" method="post" enctype="multipart/form-data">
-            <input type="text" name="username" placeholder="Имя пользователя" required>
-            <input type="text" name="title" placeholder="Название" required>
-            <input type="file" name="video" required>
-            <input type="file" name="avatar">
-            <button type="submit">Загрузить</button>
-        </form>
-    </div>
+<body class="light-mode">
+    <img src="static/logo.png" alt="Логотип VidGalaxy" class="logo">
+    <h1>Загрузить Видео</h1>
+    <button class="theme-switcher" onclick="toggleTheme()">Переключить тему</button>
+    <form id="uploadForm" enctype="multipart/form-data">
+        <input type="text" id="usernameInput" name="username" placeholder="Введите ваш никнейм">
+        <input type="text" id="titleInput" name="title" placeholder="Введите название видео">
+        <input type="file" id="videoInput" name="video" accept="video/*">
+        <input type="file" id="avatarInput" name="avatar" accept="image/*" placeholder="Загрузить аватарку">
+        <button type="submit">Загрузить</button>
+    </form>
     <script>
-        document.getElementById('uploadForm').onsubmit = async function(event) {
+        function toggleTheme() {
+            document.body.classList.toggle('dark-mode');
+            document.body.classList.toggle('light-mode');
+        }
+        document.getElementById('uploadForm').addEventListener('submit', async function(event) {
             event.preventDefault();
-            const formData = new FormData(this);
+            const formData = new FormData();
+            formData.append('username', document.getElementById('usernameInput').value);
+            formData.append('title', document.getElementById('titleInput').value);
+            formData.append('video', document.getElementById('videoInput').files[0]);
+            formData.append('avatar', document.getElementById('avatarInput').files[0]);
             const response = await fetch('/upload', {
                 method: 'POST',
                 body: formData
             });
-            const result = await response.json();
-            alert(result.message);
-        };
-
-        function toggleTheme() {
-            const body = document.body;
-            const isLight = body.style.backgroundColor === 'white';
-            body.style.backgroundColor = isLight ? '#f0f0f0' : 'white';
-            body.style.color = isLight ? '#333' : '#000';
-        }
+            if (response.ok) {
+                alert('Видео и аватарка успешно загружены!');
+            }
+        });
     </script>
 </body>
 </html>
