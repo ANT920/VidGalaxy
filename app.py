@@ -1,5 +1,5 @@
 import sqlite3
-from flask import Flask, render_template, request, jsonify, send_from_directory, redirect, url_for, session
+from flask import Flask, render_template, request, redirect, url_for, session
 import os, hashlib
 
 app = Flask(__name__)
@@ -102,11 +102,11 @@ def register_user():
             password = data['password']
             username = data['username']
             
-            print("Received registration data:", data)  # вывод отладочной информации
+            print("Received registration data:", data)
 
             # Хешируем пароль
             hashed_password = hashlib.sha256(password.encode()).hexdigest()
-            print("Registering user:", email, hashed_password)  # вывод информации для отладки
+            print("Registering user:", email, hashed_password)
             
             conn = sqlite3.connect(DATABASE)
             c = conn.cursor()
@@ -115,12 +115,12 @@ def register_user():
             conn.commit()
             conn.close()
             
-            return render_template('login.html', message='Регистрация успешна, пожалуйста, войдите.')
+            return redirect(url_for('login_user'))
         except sqlite3.IntegrityError:
-            print("IntegrityError: Этот email уже зарегистрирован.")  # вывод ошибки для отладки
+            print("IntegrityError: Этот email уже зарегистрирован.")
             return render_template('register.html', message='Этот email уже зарегистрирован.')
         except Exception as e:
-            print("Error during registration:", str(e))  # вывод ошибки для отладки
+            print("Error during registration:", str(e))
             return render_template('register.html', message=str(e))
     return render_template('register.html')
 
@@ -128,13 +128,13 @@ def register_user():
 def login_user():
     if request.method == 'POST':
         data = request.form
-        print("Received login data:", data)  # вывод отладочной информации
+        print("Received login data:", data)
         email = data['email']
         password = data['password']
         
         # Хешируем пароль для проверки
         hashed_password = hashlib.sha256(password.encode()).hexdigest()
-        print("Login attempt:", email, hashed_password)  # вывод информации для отладки
+        print("Login attempt:", email, hashed_password)
         
         conn = sqlite3.connect(DATABASE)
         c = conn.cursor()
@@ -143,12 +143,12 @@ def login_user():
         conn.close()
         
         if user:
-            print("Login successful:", user)  # вывод успешного входа для отладки
+            print("Login successful:", user)
             session['user_id'] = user[0]
             session['username'] = user[1]
             return redirect(url_for('profile'))
         else:
-            print("Login failed: Неверный email или пароль.")  # вывод ошибки для отладки
+            print("Login failed: Неверный email или пароль.")
             return render_template('login.html', message='Неверный email или пароль.')
     return render_template('login.html')
 
@@ -159,7 +159,7 @@ def profile():
         username = session['username']
         return render_template('profile.html', user_id=user_id, username=username)
     else:
-        return redirect(url_for('login'))
+        return redirect(url_for('login_user'))
 
 if __name__ == '__main__':
     init_db()
