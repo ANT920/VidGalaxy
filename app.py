@@ -1,8 +1,9 @@
 import sqlite3
-from flask import Flask, render_template, request, jsonify, send_from_directory
+from flask import Flask, render_template, request, jsonify, send_from_directory, redirect, url_for, session
 import os, hashlib
 
 app = Flask(__name__)
+app.secret_key = 'supersecretkey'
 
 UPLOAD_FOLDER = 'uploads'
 AVATAR_FOLDER = 'avatars'
@@ -119,13 +120,12 @@ def register_user():
         except Exception as e:
             print("Error during registration:", str(e))  # вывод ошибки для отладки
             return render_template('register.html', message=str(e))
-    return render_template('register.html')
+    return render_template('register)
 
 @app.route('/login', methods=['GET', 'POST'])
 def login_user():
     if request.method == 'POST':
         data = request.form
-        print("Received login data:", data)  # вывод отладочной информации
         email = data['email']
         password = data['password']
         
@@ -141,11 +141,22 @@ def login_user():
         
         if user:
             print("Login successful:", user)  # вывод успешного входа для отладки
-            return render_template('profile.html', user_id=user[0], username=user[1])
+            session['user_id'] = user[0]
+            session['username'] = user[1]
+            return redirect(url_for('profile'))
         else:
             print("Login failed: Неверный email или пароль.")  # вывод ошибки для отладки
             return render_template('login.html', message='Неверный email или пароль.')
     return render_template('login.html')
+
+@app.route('/profile')
+def profile():
+    if 'user_id' in session:
+        user_id = session['user_id']
+        username = session['username']
+        return render_template('profile.html', user_id=user_id, username=username)
+    else:
+        return redirect(url_for('login'))
 
 if __name__ == '__main__':
     init_db()
