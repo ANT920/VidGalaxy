@@ -79,6 +79,16 @@
         body.dark-mode .videoItem h2, body.dark-mode .videoItem p {
             color: #f4f4f4;
         }
+        .avatar {
+            border-radius: 50%;
+            width: 50px;
+            height: 50px;
+            margin-right: 10px;
+        }
+        .user-info {
+            display: flex;
+            align-items: center;
+        }
     </style>
 </head>
 <body class="light-mode">
@@ -91,7 +101,7 @@
     </div>
     <div id="videoContainer"></div>
     <div class="footer">
-        <p>Этот хостинг был создан на основе HTML, Python и нейросетевых шуток.</p>
+        <p>Этот хостинг был создан на основе HTML, Python, Heroku CLI и нейросетевых шуток.</p>
     </div>
     <script>
         let videos = [];
@@ -116,13 +126,24 @@
                 videoItem.className = 'videoItem';
                 const title = document.createElement('h2');
                 title.textContent = video.title;
+
+                const userInfo = document.createElement('div');
+                userInfo.className = 'user-info';
+                const avatar = document.createElement('img');
+                avatar.src = video.avatarUrl || 'static/default-avatar.png';
+                avatar.className = 'avatar';
                 const username = document.createElement('p');
                 username.textContent = `Загружено: ${video.username}`;
+
+                userInfo.appendChild(avatar);
+                userInfo.appendChild(username);
+
                 const videoElement = document.createElement('video');
                 videoElement.controls = true;
                 videoElement.src = video.url;
+
                 videoItem.appendChild(title);
-                videoItem.appendChild(username);
+                videoItem.appendChild(userInfo);
                 videoItem.appendChild(videoElement);
                 videoContainer.appendChild(videoItem);
             });
