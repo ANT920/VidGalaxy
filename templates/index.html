@@ -57,9 +57,10 @@
 </head>
 <body class="light-mode">
     <img src="static/logo.png" alt="Логотип VidGalaxy" class="logo">
+    <h1>Добро пожаловать в VidGalaxy</h1>
     <nav>
         <a href="/upload">Загрузить Видео</a>
-        <a href="/videos"Новые Видео</a>
+        <a href="/videos">Смотреть Видео</a>
     </nav>
     <button class="theme-switcher" onclick="toggleTheme()">Переключить тему</button>
     <div class="recommendations">
@@ -73,7 +74,7 @@
         }
 
         async function fetchRecommendations() {
-            const response = await fetch('/recommendations_data');
+            const response = await fetch('/videos_data');
             const data = await response.json();
             displayRecommendations(data.videos);
         }
@@ -81,7 +82,8 @@
         function displayRecommendations(videos) {
             const container = document.getElementById('recommendationContainer');
             container.innerHTML = '';
-            videos.forEach(video => {
+            const recommendedVideos = videos.slice(0, 5); // Предлагаем топ 5 видео
+            recommendedVideos.forEach(video => {
                 const videoDiv = document.createElement('div');
                 videoDiv.className = 'video-recommendation';
                 const title = document.createElement('h3');
