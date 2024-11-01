@@ -1,6 +1,7 @@
 import sqlite3
 from flask import Flask, render_template, request, jsonify, send_from_directory
 import os
+import hashlib
 
 app = Flask(__name__)
 
@@ -99,6 +100,49 @@ def login_page():
 @app.route('/register')
 def register_page():
     return render_template('register.html')
+
+@app.route('/register', methods=['POST'])
+def register_user():
+    data = request.json
+    email = data['email']
+    password = data['password']
+    username = data['username']
+    
+    # Хешируем пароль
+    hashed_password = hashlib.sha256(password.encode()).hexdigest()
+    
+    conn = sqlite3.connect(DATABASE)
+    c = conn.cursor()
+    try:
+        c.execute("INSERT INTO users (email, password, username) VALUES (?, ?, ?)",
+                  (email, hashed_password, username))
+        conn.commit()
+    except sqlite3.IntegrityError:
+        return jsonify({'status': 'fail', 'message': 'Этот email уже зарегистрирован.'}), 400
+    finally:
+        conn.close()
+    
+    return jsonify({'status': 'success', 'message': 'Регистрация успешна.'})
+
+@app.route('/login', methods=['POST'])
+def login_user():
+    data = request.json
+    email = data['email']
+    password = data['password']
+    
+    # Хешируем пароль для проверки
+    hashed_password = hashlib.sha256(password.encode()).hexdigest()
+    
+    conn = sqlite3.connect(DATABASE)
+    c = conn.cursor()
+    c.execute("SELECT id, username FROM users WHERE email = ? AND password = ?", (email, hashed_password))
+    user = c.fetchone()
+    conn.close()
+    
+    if user:
+        return jsonify({'status': 'success', 'message': 'Вход успешен.', 'user_id': user[0], 'username': user[1]})
+    else:
+        return jsonify({'status': 'fail', 'message': 'Неверный email или пароль.'}), 401
 
 if __name__ == '__main__':
     init_db()
