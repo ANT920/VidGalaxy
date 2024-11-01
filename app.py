@@ -93,29 +93,30 @@ def uploaded_avatar(filename):
     return send_from_directory(AVATAR_FOLDER, filename)
 
 @app.route('/register', methods=['GET', 'POST'])
-def register_page():
+def register_user():
     if request.method == 'POST':
-        data = request.json
-        email = data['email']
-        password = data['password']
-        username = data['username']
-        
-        # Хешируем пароль
-        hashed_password = hashlib.sha256(password.encode()).hexdigest()
-        
-        conn = sqlite3.connect(DATABASE)
-        c = conn.cursor()
         try:
+            data = request.form
+            email = data['email']
+            password = data['password']
+            username = data['username']
+            
+            # Хешируем пароль
+            hashed_password = hashlib.sha256(password.encode()).hexdigest()
+            
+            conn = sqlite3.connect(DATABASE)
+            c = conn.cursor()
             c.execute("INSERT INTO users (email, password, username) VALUES (?, ?, ?)",
                       (email, hashed_password, username))
             conn.commit()
-            return jsonify({'status': 'success', 'message': 'Регистрация успешна.'})
-        except sqlite3.IntegrityError:
-            return jsonify({'status': 'fail', 'message': 'Этот email уже зарегистрирован.'}), 400
-        finally:
             conn.close()
-    else:
-        return render_template('register.html')
+            
+            return render_template('login.html', message='Регистрация успешна, пожалуйста, войдите.')
+        except sqlite3.IntegrityError:
+            return render_template('register.html', message='Этот email уже зарегистрирован.')
+        except Exception as e:
+            return render_template('register.html', message=str(e))
+    return render_template('register.html')
 
 @app.route('/login', methods=['GET', 'POST'])
 def login_page():
