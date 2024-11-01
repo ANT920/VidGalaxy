@@ -94,8 +94,6 @@ def uploaded_avatar(filename):
 
 @app.route('/register', methods=['GET', 'POST'])
 def register_page():
-    if request.method == 'GET':
-        return render_template('register.html')
     if request.method == 'POST':
         data = request.json
         email = data['email']
@@ -111,35 +109,36 @@ def register_page():
             c.execute("INSERT INTO users (email, password, username) VALUES (?, ?, ?)",
                       (email, hashed_password, username))
             conn.commit()
+            return jsonify({'status': 'success', 'message': 'Регистрация успешна.'})
         except sqlite3.IntegrityError:
             return jsonify({'status': 'fail', 'message': 'Этот email уже зарегистрирован.'}), 400
         finally:
             conn.close()
-        
-        return jsonify({'status': 'success', 'message': 'Регистрация успешна.'})
+    else:
+        return render_template('register.html')
 
 @app.route('/login', methods=['GET', 'POST'])
 def login_page():
-    if request.method == 'GET':
-        return render_template('login.html')
     if request.method == 'POST':
         data = request.json
         email = data['email']
         password = data['password']
-    
-    # Хешируем пароль для проверки
-    hashed_password = hashlib.sha256(password.encode()).hexdigest()
-    
-    conn = sqlite3.connect(DATABASE)
-    c = conn.cursor()
-    c.execute("SELECT id, username FROM users WHERE email = ? AND password = ?", (email, hashed_password))
-    user = c.fetchone()
-    conn.close()
-    
-    if user:
-        return jsonify({'status': 'success', 'message': 'Вход успешен.', 'user_id': user[0], 'username': user[1]})
+        
+        # Хешируем пароль для проверки
+        hashed_password = hashlib.sha256(password.encode()).hexdigest()
+        
+        conn = sqlite3.connect(DATABASE)
+        c = conn.cursor()
+        c.execute("SELECT id, username FROM users WHERE email = ? AND password = ?", (email, hashed_password))
+        user = c.fetchone()
+        conn.close()
+        
+        if user:
+            return jsonify({'status': 'success', 'message': 'Вход успешен.', 'user_id': user[0], 'username': user[1]})
+        else:
+            return jsonify({'status': 'fail', 'message': 'Неверный email или пароль.'}), 401
     else:
-        return jsonify({'status': 'fail', 'message': 'Неверный email или пароль.'}), 401
+        return render_template('login.html')
 
 if __name__ == '__main__':
     init_db()
