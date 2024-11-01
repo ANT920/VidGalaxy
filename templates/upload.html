@@ -4,15 +4,15 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Загрузить Видео</title>
-    <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Roboto:wght@400;700&display=swap">
+    <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Open+Sans:wght@400;700&display=swap">
     <style>
         body.light-mode {
-            font-family: 'Roboto', sans-serif;
+            font-family: 'Open Sans', sans-serif;
             background-color: #f4f4f4;
             color: #333;
         }
         body.dark-mode {
-            font-family: 'Roboto', sans-serif;
+            font-family: 'Open Sans', sans-serif;
             background-color: #1e1e1e;
             color: #f4f4f4;
         }
@@ -64,7 +64,6 @@
     <form id="uploadForm" enctype="multipart/form-data">
         <input type="text" id="usernameInput" name="username" placeholder="Введите ваш никнейм">
         <input type="text" id="titleInput" name="title" placeholder="Введите название видео">
-        <input type="file" id="avatarInput" name="avatar" accept="image/*">
         <input type="file" id="videoInput" name="video" accept="video/*">
         <button type="submit">Загрузить</button>
     </form>
@@ -78,7 +77,6 @@
             const formData = new FormData();
             formData.append('username', document.getElementById('usernameInput').value);
             formData.append('title', document.getElementById('titleInput').value);
-            formData.append('avatar', document.getElementById('avatarInput').files[0]);
             formData.append('video', document.getElementById('videoInput').files[0]);
             const response = await fetch('/upload', {
                 method: 'POST',
