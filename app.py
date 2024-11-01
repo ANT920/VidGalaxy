@@ -125,6 +125,7 @@ def register_user():
 def login_user():
     if request.method == 'POST':
         data = request.form
+        print("Received login data:", data)  # вывод отладочной информации
         email = data['email']
         password = data['password']
         
