@@ -2,6 +2,7 @@ import os
 from flask import Flask, render_template, request, jsonify, send_from_directory, session, redirect, url_for
 import sqlite3
 import hashlib
+import stat
 
 app = Flask(__name__)
 app.config['UPLOAD_FOLDER'] = os.getenv('UPLOAD_FOLDER', 'uploads')
@@ -10,6 +11,17 @@ app.secret_key = 'your_secret_key'
 
 DATABASE_URL = 'vidgalaxy.db'
 print("Database URL:", DATABASE_URL)
+
+def ensure_dir(directory):
+    if not os.path.exists(directory):
+        os.makedirs(directory)
+        os.chmod(directory, stat.S_IRWXU | stat.S_IRWXG | stat.S_IRWXO)
+        print(f"Directory created: {directory}")
+    else:
+        print(f"Directory already exists: {directory}")
+
+ensure_dir(app.config['UPLOAD_FOLDER'])
+ensure_dir(app.config['AVATAR_FOLDER'])
 
 if not os.path.exists(app.config['UPLOAD_FOLDER']):
     os.makedirs(app.config['UPLOAD_FOLDER'])
