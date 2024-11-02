@@ -1,5 +1,5 @@
-CREATE TABLE IF NOT EXISTS videos (
-    id SERIAL PRIMARY KEY,
+CREATE TABLE videos (
+    id INTEGER PRIMARY KEY,
     url TEXT,
     username TEXT,
     title TEXT,
@@ -7,8 +7,8 @@ CREATE TABLE IF NOT EXISTS videos (
     timestamp REAL
 );
 
-CREATE TABLE IF NOT EXISTS users (
-    id SERIAL PRIMARY KEY,
+CREATE TABLE users (
+    id INTEGER PRIMARY KEY,
     email TEXT UNIQUE,
     password TEXT,
     username TEXT
