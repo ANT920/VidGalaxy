@@ -74,14 +74,18 @@ def get_videos():
 def upload():
     try:
         if 'video' not in request.files:
+            print("No video file found in request")  # Отладочная информация
             return jsonify({'message': 'Нет файла видео'}), 400
         file = request.files['video']
         if file.filename == '':
+            print("No file selected")  # Отладочная информация
             return jsonify({'message': 'Пожалуйста, выберите файл'}), 400
 
-        username = request.form['username']
-        title = request.form['title']
+        username = request.form.get('username')
+        title = request.form.get('title')
         avatar = request.files.get('avatar')
+
+        print(f"Received upload request: username={username}, title={title}, video={file.filename}, avatar={avatar.filename if avatar else 'None'}")  # Отладочная информация
 
         file_path = os.path.join(app.config['UPLOAD_FOLDER'], file.filename)
         file.save(file_path)
@@ -105,8 +109,10 @@ def upload():
                   (video_data['url'], video_data['username'], video_data['title'], video_data['avatarUrl'], video_data['timestamp']))
         conn.commit()
         conn.close()
+        print("Video uploaded successfully")  # Отладочная информация
         return jsonify({'message': 'Видео успешно загружено'}), 200
     except Exception as e:
+        print("Error during upload:", str(e))  # Отладочная информация
         return jsonify({'message': str(e)}), 500
 
 @app.route('/uploads/<filename>')
