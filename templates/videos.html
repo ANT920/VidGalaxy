@@ -78,10 +78,10 @@
         function toggleTheme() {
             document.body.classList.toggle('dark-mode');
             document.body.classList.toggle('light-mode');
-        }
         async function loadVideos() {
         const response = await fetch('/videos_data');
         const result = await response.json();
+        console.log(result);  // Добавим для отладки
         const container = document.getElementById('videosContainer');
         container.innerHTML = '';
         result.videos.forEach(video => {
