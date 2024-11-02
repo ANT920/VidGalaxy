@@ -1,6 +1,6 @@
 __pycache__/
 *.pyc
-database.db
+venv/
 uploads/
 avatars/
-.env
+*.db
