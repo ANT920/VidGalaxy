@@ -1,32 +1,29 @@
-import sqlite3
-from flask import Flask, render_template, request, jsonify, send_from_directory
 import os
+import sqlite3
+from flask import Flask, render_template, request, jsonify, send_from_directory, redirect, url_for, session
+import hashlib
 
 app = Flask(__name__)
+app.secret_key = 'your_secret_key'
 
-UPLOAD_FOLDER = 'uploads'
-AVATAR_FOLDER = 'avatars'
+app.config['UPLOAD_FOLDER'] = os.getenv('UPLOAD_FOLDER', 'uploads')
+app.config['AVATAR_FOLDER'] = os.getenv('AVATAR_FOLDER', 'avatars')
 
-if not os.path.exists(UPLOAD_FOLDER):
-    os.makedirs(UPLOAD_FOLDER)
-if not os.path.exists(AVATAR_FOLDER):
-    os.makedirs(AVATAR_FOLDER)
+# Используй переменную окружения для подключения к базе данных
+DATABASE_URL = os.getenv('DATABASE_URL', 'vidgalaxy.db')
+
+if not os.path.exists(app.config['UPLOAD_FOLDER']):
+    os.makedirs(app.config['UPLOAD_FOLDER'])
+if not os.path.exists(app.config['AVATAR_FOLDER']):
+    os.makedirs(app.config['AVATAR_FOLDER'])
 
 def init_db():
-    conn = sqlite3.connect('vidgalaxy.db')
+    conn = sqlite3.connect(DATABASE_URL)
     c = conn.cursor()
     c.execute('''CREATE TABLE IF NOT EXISTS videos
-                 (id INTEGER PRIMARY KEY,
-                 url TEXT,
-                 username TEXT,
-                 title TEXT,
-                 avatarUrl TEXT,
-                 timestamp REAL)''')
+                 (id INTEGER PRIMARY KEY, url TEXT, username TEXT, title TEXT, avatarUrl TEXT, timestamp REAL)''')
     c.execute('''CREATE TABLE IF NOT EXISTS users
-                 (id INTEGER PRIMARY KEY,
-                 email TEXT UNIQUE,
-                 password TEXT,
-                 username TEXT)''')
+                 (id INTEGER PRIMARY KEY, email TEXT UNIQUE, password TEXT, username TEXT)''')
     conn.commit()
     conn.close()
 
@@ -45,14 +42,15 @@ def videos_page():
 @app.route('/videos_data', methods=['GET'])
 def get_videos():
     try:
-        conn = sqlite3.connect('vidgalaxy.db')
+        conn = sqlite3.connect(DATABASE_URL)
         c = conn.cursor()
         c.execute("SELECT url, username, title, avatarUrl FROM videos ORDER BY timestamp DESC")
         videos = [{'url': row[0], 'username': row[1], 'title': row[2], 'avatarUrl': row[3]} for row in c.fetchall()]
         conn.close()
-        print(videos)  # Добавим для отладки
+        print("Fetched videos:", videos)  # Отладочная информация
         return jsonify({'videos': videos})
     except Exception as e:
+        print("Error:", str(e))  # Отладочная информация
         return jsonify({'message': str(e)}), 500
 
 @app.route('/upload', methods=['POST'])
@@ -68,12 +66,12 @@ def upload():
         title = request.form['title']
         avatar = request.files.get('avatar')
 
-        file_path = os.path.join(UPLOAD_FOLDER, file.filename)
+        file_path = os.path.join(app.config['UPLOAD_FOLDER'], file.filename)
         file.save(file_path)
 
         avatar_url = None
         if avatar:
-            avatar_path = os.path.join(AVATAR_FOLDER, avatar.filename)
+            avatar_path = os.path.join(app.config['AVATAR_FOLDER'], avatar.filename)
             avatar.save(avatar_path)
             avatar_url = f'/avatars/{avatar.filename}'
 
@@ -84,7 +82,7 @@ def upload():
             'avatarUrl': avatar_url,
             'timestamp': os.path.getmtime(file_path)
         }
-        conn = sqlite3.connect('vidgalaxy.db')
+        conn = sqlite3.connect(DATABASE_URL)
         c = conn.cursor()
         c.execute("INSERT INTO videos (url, username, title, avatarUrl, timestamp) VALUES (?, ?, ?, ?, ?)",
                   (video_data['url'], video_data['username'], video_data['title'], video_data['avatarUrl'], video_data['timestamp']))
@@ -96,11 +94,11 @@ def upload():
 
 @app.route('/uploads/<filename>')
 def uploaded_file(filename):
-    return send_from_directory(UPLOAD_FOLDER, filename)
+    return send_from_directory(app.config['UPLOAD_FOLDER'], filename)
 
 @app.route('/avatars/<filename>')
 def uploaded_avatar(filename):
-    return send_from_directory(AVATAR_FOLDER, filename)
+    return send_from_directory(app.config['AVATAR_FOLDER'], filename)
 
 @app.route('/register', methods=['GET', 'POST'])
 def register_user():
