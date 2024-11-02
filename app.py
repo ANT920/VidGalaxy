@@ -1,16 +1,13 @@
 import os
+from flask import Flask, render_template, request, jsonify, send_from_directory
 import sqlite3
-from flask import Flask, render_template, request, jsonify, send_from_directory, redirect, url_for, session
-import hashlib
 
 app = Flask(__name__)
-app.secret_key = 'your_secret_key'
-
 app.config['UPLOAD_FOLDER'] = os.getenv('UPLOAD_FOLDER', 'uploads')
 app.config['AVATAR_FOLDER'] = os.getenv('AVATAR_FOLDER', 'avatars')
 
-# Используй переменную окружения для подключения к базе данных
-DATABASE_URL = os.getenv('DATABASE_URL', 'vidgalaxy.db')
+# Используем относительный путь к базе данных
+DATABASE_URL = 'vidgalaxy.db'
 
 if not os.path.exists(app.config['UPLOAD_FOLDER']):
     os.makedirs(app.config['UPLOAD_FOLDER'])
@@ -20,16 +17,32 @@ if not os.path.exists(app.config['AVATAR_FOLDER']):
 def init_db():
     conn = sqlite3.connect(DATABASE_URL)
     c = conn.cursor()
-    c.execute('''CREATE TABLE IF NOT EXISTS videos
-                 (id INTEGER PRIMARY KEY, url TEXT, username TEXT, title TEXT, avatarUrl TEXT, timestamp REAL)''')
-    c.execute('''CREATE TABLE IF NOT EXISTS users
-                 (id INTEGER PRIMARY KEY, email TEXT UNIQUE, password TEXT, username TEXT)''')
+    c.execute('''
+    CREATE TABLE IF NOT EXISTS videos (
+        id INTEGER PRIMARY KEY,
+        url TEXT,
+        username TEXT,
+        title TEXT,
+        avatarUrl TEXT,
+        timestamp REAL
+    )
+    ''')
+
+    c.execute('''
+    CREATE TABLE IF NOT EXISTS users (
+        id INTEGER PRIMARY KEY,
+        email TEXT UNIQUE,
+        password TEXT,
+        username TEXT
+    )
+    ''')
+
     conn.commit()
     conn.close()
 
 @app.route('/')
 def index():
-    return render_template('index.html')
+    return "Hello, VidGalaxy!"
 
 @app.route('/upload')
 def upload_page():
