@@ -28,6 +28,9 @@
             border: none;
             border-radius: 4px;
             margin: 20px;
+            position: fixed;
+            left: 10px;
+            top: 10px;
         }
         .theme-switcher:hover {
             background-color: #5E35B1;
@@ -78,29 +81,29 @@
         function toggleTheme() {
             document.body.classList.toggle('dark-mode');
             document.body.classList.toggle('light-mode');
+        }
         async function loadVideos() {
-        const response = await fetch('/videos_data');
-        const result = await response.json();
-        console.log(result);  // Добавим для отладки
-        const container = document.getElementById('videosContainer');
-        container.innerHTML = '';
-        result.videos.forEach(video => {
-            const videoItem = document.createElement('div');
-            videoItem.className = 'video-item';
-            videoItem.innerHTML = `
-                <img src="${video.avatarUrl}" alt="Avatar">
-                <video controls>
-                    <source src="${video.url}" type="video/mp4">
-                    Ваш браузер не поддерживает видео тег.
-                </video>
-                <p>${video.title}</p>
-                <p>Автор: ${video.username}</p>
-            `;
-            container.appendChild(videoItem);
-        });
-    }
-   
-        loadVideos();
+            const response = await fetch('/videos_data');
+            const result = await response.json();
+            console.log(result);  // Добавим для отладки
+            const container = document.getElementById('videosContainer');
+            container.innerHTML = '';
+            result.videos.forEach(video => {
+                const videoItem = document.createElement('div');
+                videoItem.className = 'video-item';
+                videoItem.innerHTML = `
+                    <img src="${video.avatarUrl}" alt="Avatar">
+                    <video controls>
+                        <source src="${video.url}" type="video/mp4">
+                        Ваш браузер не поддерживает видео тег.
+                    </video>
+                    <p>${video.title}</p>
+                    <p>Автор: ${video.username}</p>
+                `;
+                container.appendChild(videoItem);
+            });
+        }
+
         function searchVideos() {
             const query = document.getElementById('searchBar').value.toLowerCase();
             const videoItems = document.getElementsByClassName('video-item');
