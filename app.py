@@ -3,8 +3,10 @@ from flask import Flask, render_template, request, jsonify, send_from_directory,
 import sqlite3
 import hashlib
 import stat
+from flask_cors import CORS
 
 app = Flask(__name__)
+CORS(app)
 app.config['UPLOAD_FOLDER'] = os.getenv('UPLOAD_FOLDER', 'uploads')
 app.config['AVATAR_FOLDER'] = os.getenv('AVATAR_FOLDER', 'avatars')
 app.secret_key = 'your_secret_key'
