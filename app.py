@@ -1,12 +1,13 @@
 import os
-from flask import Flask, render_template, request, jsonify, send_from_directory
+from flask import Flask, render_template, request, jsonify, send_from_directory, session, redirect, url_for
 import sqlite3
+import hashlib
 
 app = Flask(__name__)
 app.config['UPLOAD_FOLDER'] = os.getenv('UPLOAD_FOLDER', 'uploads')
 app.config['AVATAR_FOLDER'] = os.getenv('AVATAR_FOLDER', 'avatars')
+app.secret_key = 'your_secret_key'
 
-# Используем относительный путь к базе данных
 DATABASE_URL = 'vidgalaxy.db'
 
 if not os.path.exists(app.config['UPLOAD_FOLDER']):
@@ -74,7 +75,7 @@ def upload():
         file = request.files['video']
         if file.filename == '':
             return jsonify({'message': 'Пожалуйста, выберите файл'}), 400
-        
+
         username = request.form['username']
         title = request.form['title']
         avatar = request.files.get('avatar')
@@ -121,20 +122,20 @@ def register_user():
             email = data['email']
             password = data['password']
             username = data['username']
-            
+
             print("Received registration data:", data)
 
             # Хешируем пароль
             hashed_password = hashlib.sha256(password.encode()).hexdigest()
             print("Registering user:", email, hashed_password)
-            
-            conn = sqlite3.connect('vidgalaxy.db')
+
+            conn = sqlite3.connect(DATABASE_URL)
             c = conn.cursor()
             c.execute("INSERT INTO users (email, password, username) VALUES (?, ?, ?)",
                       (email, hashed_password, username))
             conn.commit()
             conn.close()
-            
+
             return redirect(url_for('login_user'))
         except sqlite3.IntegrityError:
             print("IntegrityError: Этот email уже зарегистрирован.")
