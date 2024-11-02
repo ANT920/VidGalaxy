@@ -50,6 +50,7 @@ def get_videos():
         c.execute("SELECT url, username, title, avatarUrl FROM videos ORDER BY timestamp DESC")
         videos = [{'url': row[0], 'username': row[1], 'title': row[2], 'avatarUrl': row[3]} for row in c.fetchall()]
         conn.close()
+        print(videos)  # Добавим для отладки
         return jsonify({'videos': videos})
     except Exception as e:
         return jsonify({'message': str(e)}), 500
