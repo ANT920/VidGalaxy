@@ -9,11 +9,14 @@ app.config['AVATAR_FOLDER'] = os.getenv('AVATAR_FOLDER', 'avatars')
 app.secret_key = 'your_secret_key'
 
 DATABASE_URL = 'vidgalaxy.db'
+print("Database URL:", DATABASE_URL)
 
 if not os.path.exists(app.config['UPLOAD_FOLDER']):
     os.makedirs(app.config['UPLOAD_FOLDER'])
 if not os.path.exists(app.config['AVATAR_FOLDER']):
     os.makedirs(app.config['AVATAR_FOLDER'])
+if not os.path.exists(DATABASE_URL):
+    print("Database file does not exist.")
 
 def init_db():
     conn = sqlite3.connect(DATABASE_URL)
