@@ -5,6 +5,10 @@ import hashlib
 import stat
 from flask_cors import CORS
 
+# Добавь app.secret_key в начало
+app = Flask(__name__)
+app.secret_key = 'your_secret_key'
+
 app = Flask(__name__)
 CORS(app)
 app.config['UPLOAD_FOLDER'] = os.getenv('UPLOAD_FOLDER', 'uploads')
