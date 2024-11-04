@@ -3,24 +3,30 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Добро пожаловать в VidGalaxy</title>
+    <title>VidGalaxy</title>
     <link rel="stylesheet" href="{{ url_for('send_static', filename='styles.css') }}">
 </head>
 <body>
     <header>
         <img src="{{ url_for('send_static', filename='logo.png') }}" alt="Логотип VidGalaxy" class="logo">
-        <h1>Добро пожаловать в VidGalaxy</h1>
         {% if 'user_id' in session %}
             <a href="{{ url_for('profile') }}">Профиль</a>
         {% else %}
             <a href="{{ url_for('login_user') }}">Войти</a>
             <a href="{{ url_for('register_user') }}">Регистрация</a>
         {% endif %}
+        <button class="theme-switcher" onclick="toggleTheme()">Сменить тему</button>
     </header>
     <main>
         <h2>Навигация</h2>
         <a href="{{ url_for('upload_page') }}">Загрузить видео</a>
         <a href="{{ url_for('videos_page') }}">Список видео</a>
     </main>
+    <script>
+        function toggleTheme() {
+            document.body.classList.toggle('dark-mode');
+            document.body.classList.toggle('light-mode');
+        }
+    </script>
 </body>
 </html>
