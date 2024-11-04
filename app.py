@@ -5,15 +5,13 @@ import hashlib
 import stat
 from flask_cors import CORS
 
-# Добавь app.secret_key в начало
-app = Flask(__name__)
-app.secret_key = 'your_secret_key'
-
+# Здесь добавь app.secret_key в начало
 app = Flask(__name__)
 CORS(app)
+app.secret_key = 'your_secret_key'
+
 app.config['UPLOAD_FOLDER'] = os.getenv('UPLOAD_FOLDER', 'uploads')
 app.config['AVATAR_FOLDER'] = os.getenv('AVATAR_FOLDER', 'avatars')
-app.secret_key = 'your_secret_key'
 
 DATABASE_URL = 'vidgalaxy.db'
 print("Database URL:", DATABASE_URL)
@@ -92,18 +90,18 @@ def get_videos():
 def upload():
     try:
         if 'video' not in request.files:
-            print("No video file found in request")
+            print("No video file found in request")  # Отладочная информация
             return jsonify({'message': 'Нет файла видео'}), 400
         file = request.files['video']
         if file.filename == '':
-            print("No file selected")
+            print("No file selected")  # Отладочная информация
             return jsonify({'message': 'Пожалуйста, выберите файл'}), 400
 
         username = request.form.get('username')
         title = request.form.get('title')
         avatar = request.files.get('avatar')
 
-        print(f"Received upload request: username={username}, title={title}, video={file.filename}, avatar={avatar.filename if avatar else 'None'}")
+        print(f"Received upload request: username={username}, title={title}, video={file.filename}, avatar={avatar.filename if avatar else 'None'}")  # Отладочная информация
 
         file_path = os.path.join(app.config['UPLOAD_FOLDER'], file.filename)
         file.save(file_path)
@@ -121,18 +119,16 @@ def upload():
             'avatarUrl': avatar_url,
             'timestamp': os.path.getmtime(file_path)
         }
-        print(f"Saving video data: {video_data}")
         conn = sqlite3.connect(DATABASE_URL)
         c = conn.cursor()
         c.execute("INSERT INTO videos (url, username, title, avatarUrl, timestamp) VALUES (?, ?, ?, ?, ?)",
                   (video_data['url'], video_data['username'], video_data['title'], video_data['avatarUrl'], video_data['timestamp']))
         conn.commit()
-        print("Data committed")
         conn.close()
-        print("Video uploaded successfully")
+        print("Video uploaded successfully")  # Отладочная информация
         return jsonify({'message': 'Видео успешно загружено'}), 200
     except Exception as e:
-        print("Error during upload:", str(e))
+        print("Error during upload:", str(e))  # Отладочная информация
         return jsonify({'message': str(e)}), 500
 
 @app.route('/uploads/<filename>')
