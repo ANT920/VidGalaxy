@@ -9,12 +9,14 @@
 <body>
     <header>
         <img src="{{ url_for('send_static', filename='logo.png') }}" alt="Логотип VidGalaxy" class="logo">
-        {% if 'user_id' in session %}
-            <a href="{{ url_for('profile') }}">Профиль</a>
-        {% else %}
-            <a href="{{ url_for('login_user') }}">Войти</a>
-            <a href="{{ url_for('register_user') }}">Регистрация</a>
-        {% endif %}
+        <div>
+            {% if 'user_id' in session %}
+                <a href="{{ url_for('profile') }}">Профиль</a>
+            {% else %}
+                <a href="{{ url_for('login_user') }}">Войти</a>
+                <a href="{{ url_for('register_user') }}">Регистрация</a>
+            {% endif %}
+        </div>
         <button class="theme-switcher" onclick="toggleTheme()">Сменить тему</button>
     </header>
     <main>
