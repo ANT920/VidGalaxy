@@ -211,6 +211,18 @@ def profile():
 def send_static(filename):
     return send_from_directory('static', filename)
 
+@app.route('/api/videos', methods=['GET'])
+def api_videos():
+    try:
+        conn = sqlite3.connect(DATABASE_URL)
+        c = conn.cursor()
+        c.execute("SELECT * FROM videos")
+        videos = [{'id': row[0], 'url': row[1], 'username': row[2], 'title': row[3], 'avatarUrl': row[4], 'timestamp': row[5]} for row in c.fetchall()]
+        conn.close()
+        return jsonify({'videos': videos})
+    except Exception as e:
+        return jsonify({'message': str(e)}), 500
+
 if __name__ == '__main__':
     init_db()
     port = int(os.environ.get('PORT', 8000))
