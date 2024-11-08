@@ -1,34 +1,103 @@
-<!DOCTYPE html>
+<!doctype html>
 <html lang="ru">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>VidGalaxy</title>
-    <link rel="stylesheet" href="{{ url_for('send_static', filename='styles.css') }}">
+    <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Open+Sans:wght@400;700&display=swap">
+    <style>
+        body.light-mode {
+            font-family: 'Open Sans', sans-serif;
+            background-color: #f4f4f4;
+            color: #333;
+        }
+        body.dark-mode {
+            font-family: 'Open Sans', sans-serif;
+            background-color: #1e1e1e;
+            color: #f4f4f4;
+        }
+        nav a {
+            margin: 0 15px;
+            text-decoration: none;
+            color: #673AB7;
+        }
+        nav a:hover {
+            color: #5E35B1;
+        }
+        .theme-switcher {
+            cursor: pointer;
+            padding: 10px 20px;
+            background-color: #673AB7;
+            color: white;
+            border: none;
+            border-radius: 4px;
+            margin: 20px;
+        }
+        .theme-switcher:hover {
+            background-color: #5E35B1;
+        }
+        .logo {
+            width: 150px;
+            margin: 20px auto;
+        }
+        .recommendations {
+            margin: 20px;
+        }
+        .video-recommendation {
+            margin: 10px 0;
+            padding: 10px;
+            background-color: #D1C4E9;
+            border-radius: 8px;
+            box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+        }
+        .video-recommendation h3, .video-recommendation p {
+            margin: 0;
+        }
+    </style>
 </head>
-<body>
-    <header>
-        <img src="{{ url_for('send_static', filename='logo.png') }}" alt="Логотип VidGalaxy" class="logo">
-        <div>
-            {% if 'user_id' in session %}
-                <a href="{{ url_for('profile') }}">Профиль</a>
-            {% else %}
-                <a href="{{ url_for('login_user') }}">Войти</a>
-                <a href="{{ url_for('register_user') }}">Регистрация</a>
-            {% endif %}
-        </div>
-        <button class="theme-switcher" onclick="toggleTheme()">Сменить тему</button>
-    </header>
-    <main>
-        <h2>Навигация</h2>
-        <a href="{{ url_for('upload_page') }}">Загрузить видео</a>
-        <a href="{{ url_for('videos_page') }}">Список видео</a>
-    </main>
+<body class="light-mode">
+    <img src="static/logo.png" alt="Логотип VidGalaxy" class="logo">
+    <nav>
+        <a href="/upload">Загрузить Видео</a>
+        <a href="/videos">Смотреть Видео</a>
+        <a href="/login">Войти</a>
+        <a href="/register">Регистрация</a>
+    </nav>
+    <button class="theme-switcher" onclick="toggleTheme()">Переключить тему</button>
+    <div class="recommendations">
+        <h2>Рекомендации</h2>
+        <div id="recommendationContainer"></div>
+    </div>
     <script>
         function toggleTheme() {
             document.body.classList.toggle('dark-mode');
             document.body.classList.toggle('light-mode');
         }
+
+        async function fetchRecommendations() {
+            const response = await fetch('/videos_data');
+            const data = await response.json();
+            displayRecommendations(data.videos);
+        }
+
+        function displayRecommendations(videos) {
+            const container = document.getElementById('recommendationContainer');
+            container.innerHTML = '';
+            const recommendedVideos = videos.slice(0, 5); // Предлагаем топ 5 видео
+            recommendedVideos.forEach(video => {
+                const videoDiv = document.createElement('div');
+                videoDiv.className = 'video-recommendation';
+                const title = document.createElement('h3');
+                title.innerHTML = `<a href="/videos?video=${video.url}" style="text-decoration: none; color: inherit;">${video.title}</a>`;
+                const uploader = document.createElement('p');
+                uploader.textContent = `Загружено: ${video.username}`;
+                videoDiv.appendChild(title);
+                videoDiv.appendChild(uploader);
+                container.appendChild(videoDiv);
+            });
+        }
+
+        window.onload = fetchRecommendations;
     </script>
 </body>
 </html>
