@@ -58,10 +58,14 @@
 <body class="light-mode">
     <img src="static/logo.png" alt="Логотип VidGalaxy" class="logo">
     <nav>
-        <a href="/upload">Загрузить Видео</a>
-        <a href="/videos">Смотреть Видео</a>
-        <a href="/login">Войти</a>
-        <a href="/register">Регистрация</a>
+        {% if 'user_id' in session %}
+            <a href="/profile">Профиль</a>
+        {% else %}
+            <a href="/upload">Загрузить Видео</a>
+            <a href="/videos">Смотреть Видео</a>
+            <a href="/login">Войти</a>
+            <a href="/register">Регистрация</a>
+        {% endif %}
     </nav>
     <button class="theme-switcher" onclick="toggleTheme()">Переключить тему</button>
     <div class="recommendations">
