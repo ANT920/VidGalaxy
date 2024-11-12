@@ -83,10 +83,8 @@ def get_videos():
         c.execute("SELECT url, username, title, avatarUrl FROM videos ORDER BY timestamp DESC")
         videos = [{'url': row['url'], 'username': row['username'], 'title': row['title'], 'avatarUrl': row['avatarUrl']} for row in c.fetchall()]
         conn.close()
-        print("Fetched videos:", videos)  # Отладочная информация
         return jsonify({'videos': videos})
     except Exception as e:
-        print("Error:", str(e))  # Отладочная информация
         return jsonify({'message': str(e)}), 500
 
 @app.route('/upload', methods=['POST'])
