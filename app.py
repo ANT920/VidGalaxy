@@ -1,9 +1,10 @@
 import os
 from flask import Flask, render_template, request, jsonify, send_from_directory, session, redirect, url_for
-import sqlite3
 import hashlib
 import stat
 from flask_cors import CORS
+import psycopg2
+from psycopg2.extras import RealDictCursor
 
 # Здесь добавь app.secret_key в начало
 app = Flask(__name__)
@@ -13,7 +14,7 @@ app.secret_key = 'your_secret_key'
 app.config['UPLOAD_FOLDER'] = os.getenv('UPLOAD_FOLDER', 'uploads')
 app.config['AVATAR_FOLDER'] = os.getenv('AVATAR_FOLDER', 'avatars')
 
-DATABASE_URL = 'vidgalaxy.db'
+DATABASE_URL = 'postgresql://database_962z_user:sOPqlz58O2yfTlJf1OjvIClGj87SgwTb@dpg-csprubm8ii6s73f2c9r0-a.frankfurt-postgres.render.com/database_962z'
 print("Database URL:", DATABASE_URL)
 
 def ensure_dir(directory):
@@ -34,12 +35,16 @@ if not os.path.exists(app.config['AVATAR_FOLDER']):
 if not os.path.exists(DATABASE_URL):
     print("Database file does not exist.")
 
+def get_db_connection():
+    conn = psycopg2.connect(DATABASE_URL, cursor_factory=RealDictCursor)
+    return conn
+
 def init_db():
-    conn = sqlite3.connect(DATABASE_URL)
+    conn = get_db_connection()
     c = conn.cursor()
     c.execute('''
     CREATE TABLE IF NOT EXISTS videos (
-        id INTEGER PRIMARY KEY,
+        id SERIAL PRIMARY KEY,
         url TEXT,
         username TEXT,
         title TEXT,
@@ -47,16 +52,14 @@ def init_db():
         timestamp REAL
     )
     ''')
-
     c.execute('''
     CREATE TABLE IF NOT EXISTS users (
-        id INTEGER PRIMARY KEY,
+        id SERIAL PRIMARY KEY,
         email TEXT UNIQUE,
         password TEXT,
         username TEXT
     )
     ''')
-
     conn.commit()
     conn.close()
 
@@ -75,10 +78,10 @@ def videos_page():
 @app.route('/videos_data', methods=['GET'])
 def get_videos():
     try:
-        conn = sqlite3.connect(DATABASE_URL)
+        conn = get_db_connection()
         c = conn.cursor()
         c.execute("SELECT url, username, title, avatarUrl FROM videos ORDER BY timestamp DESC")
-        videos = [{'url': row[0], 'username': row[1], 'title': row[2], 'avatarUrl': row[3]} for row in c.fetchall()]
+        videos = [{'url': row['url'], 'username': row['username'], 'title': row['title'], 'avatarUrl': row['avatarUrl']} for row in c.fetchall()]
         conn.close()
         print("Fetched videos:", videos)  # Отладочная информация
         return jsonify({'videos': videos})
@@ -90,18 +93,14 @@ def get_videos():
 def upload():
     try:
         if 'video' not in request.files:
-            print("No video file found in request")  # Отладочная информация
             return jsonify({'message': 'Нет файла видео'}), 400
         file = request.files['video']
         if file.filename == '':
-            print("No file selected")  # Отладочная информация
             return jsonify({'message': 'Пожалуйста, выберите файл'}), 400
 
         username = request.form.get('username')
         title = request.form.get('title')
         avatar = request.files.get('avatar')
-
-        print(f"Received upload request: username={username}, title={title}, video={file.filename}, avatar={avatar.filename if avatar else 'None'}")  # Отладочная информация
 
         file_path = os.path.join(app.config['UPLOAD_FOLDER'], file.filename)
         file.save(file_path)
@@ -119,16 +118,16 @@ def upload():
             'avatarUrl': avatar_url,
             'timestamp': os.path.getmtime(file_path)
         }
-        conn = sqlite3.connect(DATABASE_URL)
-        c = conn.cursor()
-        c.execute("INSERT INTO videos (url, username, title, avatarUrl, timestamp) VALUES (?, ?, ?, ?, ?)",
-                  (video_data['url'], video_data['username'], video_data['title'], video_data['avatarUrl'], video_data['timestamp']))
+
+        conn = get_db_connection()
+        cur = conn.cursor()
+        cur.execute("INSERT INTO videos (url, username, title, avatarUrl, timestamp) VALUES (%s, %s, %s, %s, %s)",
+                    (video_data['url'], video_data['username'], video_data['title'], video_data['avatarUrl'], video_data['timestamp']))
         conn.commit()
+        cur.close()
         conn.close()
-        print("Video uploaded successfully")  # Отладочная информация
         return jsonify({'message': 'Видео успешно загружено'}), 200
     except Exception as e:
-        print("Error during upload:", str(e))  # Отладочная информация
         return jsonify({'message': str(e)}), 500
 
 @app.route('/uploads/<filename>')
@@ -154,15 +153,15 @@ def register_user():
             hashed_password = hashlib.sha256(password.encode()).hexdigest()
             print("Registering user:", email, hashed_password)
 
-            conn = sqlite3.connect(DATABASE_URL)
+            conn = get_db_connection()
             c = conn.cursor()
-            c.execute("INSERT INTO users (email, password, username) VALUES (?, ?, ?)",
+            c.execute("INSERT INTO users (email, password, username) VALUES (%s, %s, %s)",
                       (email, hashed_password, username))
             conn.commit()
             conn.close()
 
             return redirect(url_for('login_user'))
-        except sqlite3.IntegrityError:
+        except psycopg2.IntegrityError:
             print("IntegrityError: Этот email уже зарегистрирован.")
             return render_template('register.html', message='Этот email уже зарегистрирован.')
         except Exception as e:
@@ -182,16 +181,16 @@ def login_user():
         hashed_password = hashlib.sha256(password.encode()).hexdigest()
         print("Login attempt:", email, hashed_password)
         
-        conn = sqlite3.connect('vidgalaxy.db')
+        conn = get_db_connection()
         c = conn.cursor()
-        c.execute("SELECT id, username FROM users WHERE email = ? AND password = ?", (email, hashed_password))
+        c.execute("SELECT id, username FROM users WHERE email = %s AND password = %s", (email, hashed_password))
         user = c.fetchone()
         conn.close()
         
         if user:
             print("Login successful:", user)
-            session['user_id'] = user[0]
-            session['username'] = user[1]
+            session['user_id'] = user['id']
+            session['username'] = user['username']
             return redirect(url_for('profile'))
         else:
             print("Login failed: Неверный email или пароль.")
@@ -214,10 +213,10 @@ def send_static(filename):
 @app.route('/api/videos', methods=['GET'])
 def api_videos():
     try:
-        conn = sqlite3.connect(DATABASE_URL)
+        conn = get_db_connection()
         c = conn.cursor()
         c.execute("SELECT * FROM videos")
-        videos = [{'id': row[0], 'url': row[1], 'username': row[2], 'title': row[3], 'avatarUrl': row[4], 'timestamp': row[5]} for row in c.fetchall()]
+        videos = [{'id': row['id'], 'url': row['url'], 'username': row['username'], 'title': row['title'], 'avatarUrl': row['avatarUrl'], 'timestamp': row['timestamp']} for row in c.fetchall()]
         conn.close()
         return jsonify({'videos': videos})
     except Exception as e:
