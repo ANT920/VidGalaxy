@@ -83,8 +83,24 @@ def get_videos():
         c.execute("SELECT url, username, title, avatarUrl FROM videos ORDER BY timestamp DESC")
         videos = [{'url': row['url'], 'username': row['username'], 'title': row['title'], 'avatarUrl': row['avatarUrl']} for row in c.fetchall()]
         conn.close()
+        print("Fetched videos:", videos)  # Логирование данных
         return jsonify({'videos': videos})
     except Exception as e:
+        print("Error:", str(e))  # Логирование ошибок
+        return jsonify({'message': str(e)}), 500
+
+@app.route('/check_videos')
+def check_videos():
+    try:
+        conn = get_db_connection()
+        c = conn.cursor()
+        c.execute("SELECT * FROM videos")
+        videos = [{'id': row['id'], 'url': row['url'], 'username': row['username'], 'title': row['title'], 'avatarUrl': row['avatarUrl'], 'timestamp': row['timestamp']} for row in c.fetchall()]
+        conn.close()
+        print("All videos:", videos)  # Логирование всех данных
+        return jsonify({'videos': videos})
+    except Exception as e:
+        print("Error:", str(e))  # Логирование ошибок
         return jsonify({'message': str(e)}), 500
 
 @app.route('/upload', methods=['POST'])
