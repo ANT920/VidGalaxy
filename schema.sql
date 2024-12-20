@@ -1,15 +1,8 @@
-CREATE TABLE videos (
-    id INTEGER PRIMARY KEY,
-    url TEXT,
-    username TEXT,
-    title TEXT,
-    avatarUrl TEXT,
-    timestamp REAL
-);
-
-CREATE TABLE users (
-    id INTEGER PRIMARY KEY,
-    email TEXT UNIQUE,
-    password TEXT,
-    username TEXT
+CREATE TABLE IF NOT EXISTS videos (
+    id INTEGER PRIMARY KEY AUTOINCREMENT,
+    title TEXT NOT NULL,
+    username TEXT NOT NULL,
+    filename TEXT NOT NULL,
+    format TEXT NOT NULL,
+    uploaded_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
 );
