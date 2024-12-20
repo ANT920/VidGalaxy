@@ -1,242 +1,52 @@
+from flask import Flask, render_template, request, redirect, url_for
 import os
-from flask import Flask, render_template, request, jsonify, send_from_directory, session, redirect, url_for
-import hashlib
-import stat
-from flask_cors import CORS
-import psycopg2
-from psycopg2.extras import RealDictCursor
 
-# Здесь добавь app.secret_key в начало
 app = Flask(__name__)
-CORS(app)
-app.secret_key = 'your_secret_key'
+UPLOAD_FOLDER = 'static/uploads'
+ALLOWED_EXTENSIONS = {'mp4', 'mov', 'avi', 'mkv'}
 
-app.config['UPLOAD_FOLDER'] = os.getenv('UPLOAD_FOLDER', 'uploads')
-app.config['AVATAR_FOLDER'] = os.getenv('AVATAR_FOLDER', 'avatars')
+app.config['UPLOAD_FOLDER'] = UPLOAD_FOLDER
 
-DATABASE_URL = 'postgresql://database_962z_user:sOPqlz58O2yfTlJf1OjvIClGj87SgwTb@dpg-csprubm8ii6s73f2c9r0-a.frankfurt-postgres.render.com/database_962z'
-print("Database URL:", DATABASE_URL)
+if not os.path.exists(UPLOAD_FOLDER):
+    os.makedirs(UPLOAD_FOLDER)
 
-def ensure_dir(directory):
-    if not os.path.exists(directory):
-        os.makedirs(directory)
-        os.chmod(directory, stat.S_IRWXU | stat.S_IRWXG | stat.S_IRWXO)
-        print(f"Directory created: {directory}")
-    else:
-        print(f"Directory already exists: {directory}")
-
-ensure_dir(app.config['UPLOAD_FOLDER'])
-ensure_dir(app.config['AVATAR_FOLDER'])
-
-if not os.path.exists(app.config['UPLOAD_FOLDER']):
-    os.makedirs(app.config['UPLOAD_FOLDER'])
-if not os.path.exists(app.config['AVATAR_FOLDER']):
-    os.makedirs(app.config['AVATAR_FOLDER'])
-if not os.path.exists(DATABASE_URL):
-    print("Database file does not exist.")
-
-def get_db_connection():
-    conn = psycopg2.connect(DATABASE_URL, cursor_factory=RealDictCursor)
-    return conn
-
-def init_db():
-    conn = get_db_connection()
-    c = conn.cursor()
-    c.execute('''
-    CREATE TABLE IF NOT EXISTS videos (
-        id SERIAL PRIMARY KEY,
-        url TEXT,
-        username TEXT,
-        title TEXT,
-        avatarUrl TEXT,
-        timestamp REAL
-    )
-    ''')
-    c.execute('''
-    CREATE TABLE IF NOT EXISTS users (
-        id SERIAL PRIMARY KEY,
-        email TEXT UNIQUE,
-        password TEXT,
-        username TEXT
-    )
-    ''')
-    conn.commit()
-    conn.close()
+def allowed_file(filename):
+    return '.' in filename and filename.rsplit('.', 1)[1].lower() in ALLOWED_EXTENSIONS
 
 @app.route('/')
 def index():
     return render_template('index.html')
 
-@app.route('/upload')
-def upload_page():
+@app.route('/short')
+def short():
+    return render_template('short.html')
+
+@app.route('/trending')
+def trending():
+    return render_template('trending.html')
+
+@app.route('/upload', methods=['GET', 'POST'])
+def upload():
+    if request.method == 'POST':
+        video_title = request.form['videoTitle']
+        user_name = request.form['userName']
+        video_format = request.form['videoFormat']
+        file = request.files['videoUpload']
+        
+        if file and allowed_file(file.filename):
+            filename = file.filename
+            filepath = os.path.join(app.config['UPLOAD_FOLDER'], filename)
+            file.save(filepath)
+            # Здесь можно добавить сохранение информации о видео в базу данных или файл
+            # Например:
+            # save_video_info(video_title, user_name, filename, video_format)
+
+            return redirect(url_for('index'))
     return render_template('upload.html')
 
-@app.route('/videos')
-def videos_page():
-    return render_template('videos.html')
-
-@app.route('/videos_data', methods=['GET'])
-def get_videos():
-    try:
-        conn = get_db_connection()
-        c = conn.cursor()
-        c.execute("SELECT url, username, title, avatarUrl FROM videos ORDER BY timestamp DESC")
-        videos = [{'url': row['url'], 'username': row['username'], 'title': row['title'], 'avatarUrl': row['avatarUrl']} for row in c.fetchall()]
-        conn.close()
-        print("Fetched videos:", videos)  # Логирование данных
-        return jsonify({'videos': videos})
-    except Exception as e:
-        print("Error:", str(e))  # Логирование ошибок
-        return jsonify({'message': str(e)}), 500
-
-@app.route('/check_videos')
-def check_videos():
-    try:
-        conn = get_db_connection()
-        c = conn.cursor()
-        c.execute("SELECT * FROM videos")
-        videos = [{'id': row['id'], 'url': row['url'], 'username': row['username'], 'title': row['title'], 'avatarUrl': row['avatarUrl'], 'timestamp': row['timestamp']} for row in c.fetchall()]
-        conn.close()
-        print("All videos:", videos)  # Логирование всех данных
-        return jsonify({'videos': videos})
-    except Exception as e:
-        print("Error:", str(e))  # Логирование ошибок
-        return jsonify({'message': str(e)}), 500
-
-@app.route('/upload', methods=['POST'])
-def upload():
-    try:
-        if 'video' not in request.files:
-            return jsonify({'message': 'Нет файла видео'}), 400
-        file = request.files['video']
-        if file.filename == '':
-            return jsonify({'message': 'Пожалуйста, выберите файл'}), 400
-
-        username = request.form.get('username')
-        title = request.form.get('title')
-        avatar = request.files.get('avatar')
-
-        file_path = os.path.join(app.config['UPLOAD_FOLDER'], file.filename)
-        file.save(file_path)
-
-        avatar_url = None
-        if avatar:
-            avatar_path = os.path.join(app.config['AVATAR_FOLDER'], avatar.filename)
-            avatar.save(avatar_path)
-            avatar_url = f'/avatars/{avatar.filename}'
-
-        video_data = {
-            'url': f'/uploads/{file.filename}',
-            'username': username,
-            'title': title,
-            'avatarUrl': avatar_url,
-            'timestamp': os.path.getmtime(file_path)
-        }
-
-        conn = get_db_connection()
-        cur = conn.cursor()
-        cur.execute("INSERT INTO videos (url, username, title, avatarUrl, timestamp) VALUES (%s, %s, %s, %s, %s)",
-                    (video_data['url'], video_data['username'], video_data['title'], video_data['avatarUrl'], video_data['timestamp']))
-        conn.commit()
-        cur.close()
-        conn.close()
-        return jsonify({'message': 'Видео успешно загружено'}), 200
-    except Exception as e:
-        return jsonify({'message': str(e)}), 500
-
-@app.route('/uploads/<filename>')
-def uploaded_file(filename):
-    return send_from_directory(app.config['UPLOAD_FOLDER'], filename)
-
-@app.route('/avatars/<filename>')
-def uploaded_avatar(filename):
-    return send_from_directory(app.config['AVATAR_FOLDER'], filename)
-
-@app.route('/register', methods=['GET', 'POST'])
-def register_user():
-    if request.method == 'POST':
-        try:
-            data = request.form
-            email = data['email']
-            password = data['password']
-            username = data['username']
-
-            print("Received registration data:", data)
-
-            # Хешируем пароль
-            hashed_password = hashlib.sha256(password.encode()).hexdigest()
-            print("Registering user:", email, hashed_password)
-
-            conn = get_db_connection()
-            c = conn.cursor()
-            c.execute("INSERT INTO users (email, password, username) VALUES (%s, %s, %s)",
-                      (email, hashed_password, username))
-            conn.commit()
-            conn.close()
-
-            return redirect(url_for('login_user'))
-        except psycopg2.IntegrityError:
-            print("IntegrityError: Этот email уже зарегистрирован.")
-            return render_template('register.html', message='Этот email уже зарегистрирован.')
-        except Exception as e:
-            print("Error during registration:", str(e))
-            return render_template('register.html', message=str(e))
-    return render_template('register.html')
-
-@app.route('/login', methods=['GET', 'POST'])
-def login_user():
-    if request.method == 'POST':
-        data = request.form
-        print("Received login data:", data)
-        email = data['email']
-        password = data['password']
-        
-        # Хешируем пароль для проверки
-        hashed_password = hashlib.sha256(password.encode()).hexdigest()
-        print("Login attempt:", email, hashed_password)
-        
-        conn = get_db_connection()
-        c = conn.cursor()
-        c.execute("SELECT id, username FROM users WHERE email = %s AND password = %s", (email, hashed_password))
-        user = c.fetchone()
-        conn.close()
-        
-        if user:
-            print("Login successful:", user)
-            session['user_id'] = user['id']
-            session['username'] = user['username']
-            return redirect(url_for('profile'))
-        else:
-            print("Login failed: Неверный email или пароль.")
-            return render_template('login.html', message='Неверный email или пароль.')
-    return render_template('login.html')
-
-@app.route('/profile')
-def profile():
-    if 'user_id' in session:
-        user_id = session['user_id']
-        username = session['username']
-        return render_template('profile.html', user_id=user_id, username=username)
-    else:
-        return redirect(url_for('login_user'))
-
-@app.route('/static/<path:filename>')
-def send_static(filename):
-    return send_from_directory('static', filename)
-
-@app.route('/api/videos', methods=['GET'])
-def api_videos():
-    try:
-        conn = get_db_connection()
-        c = conn.cursor()
-        c.execute("SELECT * FROM videos")
-        videos = [{'id': row['id'], 'url': row['url'], 'username': row['username'], 'title': row['title'], 'avatarUrl': row['avatarUrl'], 'timestamp': row['timestamp']} for row in c.fetchall()]
-        conn.close()
-        return jsonify({'videos': videos})
-    except Exception as e:
-        return jsonify({'message': str(e)}), 500
+@app.route('/telegram')
+def telegram():
+    return render_template('telegram.html')
 
 if __name__ == '__main__':
-    init_db()
-    port = int(os.environ.get('PORT', 8000))
-    app.run(host='0.0.0.0', port=port)
+    app.run(debug=True)
