@@ -1,4 +1,1 @@
-Flask
-gunicorn
-flask_cors
-psycopg2
+Flask==2.0.2
