@@ -1,93 +1,214 @@
-<!doctype html>
+<!DOCTYPE html>
 <html lang="ru">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Загрузить Видео</title>
-    <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Open+Sans:wght@400;700&display=swap">
+    <title>VidGalaxy Загрузить видео</title>
     <style>
-        body.light-mode {
-            font-family: 'Open Sans', sans-serif;
-            background-color: #f4f4f4;
-            color: #333;
+        /* Подключение шрифта Manrope */
+        @import url('https://fonts.googleapis.com/css2?family=Manrope:wght@400;700&display=swap');
+
+        /* Основные стили */
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+            font-family: 'Manrope', sans-serif;
         }
-        body.dark-mode {
-            font-family: 'Open Sans', sans-serif;
+
+        body {
             background-color: #1e1e1e;
-            color: #f4f4f4;
+            color: #fff;
         }
-        .logo {
-            width: 150px;
-            margin: 20px auto;
-        }
-        form {
-            margin-bottom: 20px;
+
+        header {
+            background-color: #2c2c2c;
+            padding: 1rem;
             display: flex;
-            flex-direction: column;
             align-items: center;
-            background-color: #D1C4E9;
-            padding: 20px;
-            border-radius: 10px;
+            justify-content: space-between;
         }
-        input[type="file"], input[type="text"], button {
-            margin: 5px 0;
-            padding: 10px;
-            border: 1px solid #673AB7;
-            border-radius: 4px;
+
+        header .logo img {
+            height: 30px;
+            margin-right: 10px;
         }
-        button {
-            background-color: #673AB7;
-            color: white;
-            cursor: pointer;
+
+        .search-bar {
+            display: flex;
+            align-items: center;
+            background-color: #333;
+            border-radius: 5px;
+            padding: 0.5rem;
         }
-        button:hover {
-            background-color: #5E35B1;
-        }
-        .theme-switcher {
-            cursor: pointer;
-            padding: 10px 20px;
-            background-color: #673AB7;
-            color: white;
+
+        .search-bar input {
+            background: none;
             border: none;
-            border-radius: 4px;
-            margin: 20px;
+            color: #fff;
+            padding: 0.5rem;
+            outline: none;
+            width: 100%;
         }
-        .theme-switcher:hover {
-            background-color: #5E35B1;
+
+        .search-bar button {
+            background: none;
+            border: none;
+            color: #a259ff;
+            cursor: pointer;
+        }
+
+        .nav-horizontal {
+            display: flex;
+            gap: 1rem;
+            list-style: none;
+            padding: 1rem 0;
+        }
+
+        .nav-horizontal li {
+            display: flex;
+            align-items: center;
+        }
+
+        .nav-horizontal li a {
+            color: white;
+            text-decoration: none;
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+            transition: transform 0.3s;
+        }
+
+        .nav-horizontal li a:hover {
+            transform: scale(1.1);
+        }
+
+        .nav-horizontal .fa {
+            font-size: 24px;
+        }
+
+        .search-icon {
+            font-size: 20px;
+            color: #a259ff;
+            margin-right: 0.5rem;
+        }
+
+        .main-content {
+            padding: 2rem;
+        }
+
+        .upload-container {
+            background-color: #333;
+            padding: 2rem;
+            border-radius: 10px;
+            text-align: center;
+            max-width: 600px;
+            margin: 0 auto;
+        }
+
+        .upload-container h2 {
+            margin-bottom: 1rem;
+        }
+
+        .upload-container input[type="text"],
+        .upload-container input[type="file"] {
+            width: calc(100% - 2rem);
+            padding: 0.75rem;
+            margin: 0.5rem 0;
+            border-radius: 5px;
+            border: none;
+            outline: none;
+        }
+
+        .upload-container input[type="file"] {
+            display: none;
+        }
+
+        .upload-container label {
+            background-color: #a259ff;
+            padding: 0.75rem 1.5rem;
+            border-radius: 5px;
+            cursor: pointer;
+            color: white;
+            transition: background-color 0.3s;
+            display: block;
+            margin: 0.5rem 0;
+        }
+
+        .upload-container label:hover {
+            background-color: #8a4dbf;
+        }
+
+        .upload-container select {
+            width: calc(100% - 2rem);
+            padding: 0.75rem;
+            margin: 0.5rem 0;
+            border-radius: 5px;
+            border: none;
+            outline: none;
+        }
+
+        .upload-container button {
+            margin-top: 1rem;
+            background-color: #a259ff;
+            padding: 0.75rem 1.5rem;
+            border: none;
+            border-radius: 5px;
+            cursor: pointer;
+            color: white;
+            transition: background-color 0.3s;
+        }
+
+        .upload-container button:hover {
+            background-color: #8a4dbf;
+        }
+
+        footer {
+            background-color: #2c2c2c;
+            color: white;
+            text-align: center;
+            padding: 1rem 0;
+            margin-top: 2rem;
         }
     </style>
+    <!-- Подключение библиотеки FontAwesome -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.15.3/css/all.min.css">
 </head>
-<body class="light-mode">
-    <img src="static/logo.png" alt="Логотип VidGalaxy" class="logo">
-    <h1>Загрузить Видео</h1>
-    <button class="theme-switcher" onclick="toggleTheme()">Переключить тему</button>
-    <form id="uploadForm" enctype="multipart/form-data">
-        <input type="text" id="usernameInput" name="username" placeholder="Введите ваш никнейм">
-        <input type="text" id="titleInput" name="title" placeholder="Введите название видео">
-        <input type="file" id="videoInput" name="video" accept="video/*">
-        <input type="file" id="avatarInput" name="avatar" accept="image/*" placeholder="Загрузить аватарку">
-        <button type="submit">Загрузить</button>
-    </form>
-    <script>
-        function toggleTheme() {
-            document.body.classList.toggle('dark-mode');
-            document.body.classList.toggle('light-mode');
-        }
-        document.getElementById('uploadForm').addEventListener('submit', async function(event) {
-            event.preventDefault();
-            const formData = new FormData();
-            formData.append('username', document.getElementById('usernameInput').value);
-            formData.append('title', document.getElementById('titleInput').value);
-            formData.append('video', document.getElementById('videoInput').files[0]);
-            formData.append('avatar', document.getElementById('avatarInput').files[0]);
-            const response = await fetch('/upload', {
-                method: 'POST',
-                body: formData
-            });
-            if (response.ok) {
-                alert('Видео и аватарка успешно загружены!');
-            }
-        });
-    </script>
+<body>
+    <header>
+        <div class="logo">
+            <img src="static/logo.png" alt="VidGalaxy Логотип">
+        </div>
+        <nav>
+            <ul class="nav-horizontal">
+                <li><a href="index.html"><i class="fa fa-home"></i>Главная</a></li>
+                <li><a href="short.html"><i class="fa fa-video"></i>Short</a></li>
+                <li><a href="trending.html"><i class="fa fa-fire"></i>В тренде</a></li>
+                <li><a href="upload.html" class="active"><i class="fa fa-upload"></i>Загрузить видео</a></li>
+                <li><a href="telegram.html"><i class="fa fa-paper-plane"></i>Telegram-канал</a></li>
+            </ul>
+        </nav>
+        <div class="search-bar">
+            <input type="text" placeholder="Поиск видео">
+            <button type="button"><i class="fas fa-search"></i></button>
+        </div>
+    </header>
+    <main class="main-content">
+        <div class="upload-container">
+            <h2>Загрузить видео</h2>
+            <input type="text" id="videoTitle" name="videoTitle" placeholder="Название видео">
+            <input type="text" id="userName" name="userName" placeholder="Ваше имя пользователя">
+            <label for="videoUpload">Выбрать видео</label>
+            <input type="file" id="videoUpload" name="videoUpload" accept="video/*">
+            <select id="videoFormat" name="videoFormat">
+                <option value="16:9">Обычное (16:9)</option>
+                <option value="9:16">Короткое (9:16)</option>
+            </select>
+            <button type="button">Загрузить</button>
+        </div>
+    </main>
+    <footer>
+        <p>&copy; 2024 VidGalaxy. Все права защищены.</p>
+    </footer>
 </body>
 </html>
