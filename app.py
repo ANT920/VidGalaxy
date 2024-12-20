@@ -1,5 +1,11 @@
 from flask import Flask, render_template, request, redirect, url_for
+from supabase import create_client, Client
 import os
+from dotenv import load_dotenv
+import psycopg2
+
+# Загрузка переменных окружения из .env файла
+load_dotenv()
 
 app = Flask(__name__)
 UPLOAD_FOLDER = 'static/uploads'
@@ -12,6 +18,31 @@ if not os.path.exists(UPLOAD_FOLDER):
 
 def allowed_file(filename):
     return '.' in filename and filename.rsplit('.', 1)[1].lower() in ALLOWED_EXTENSIONS
+
+# Инициализация Supabase
+SUPABASE_URL = os.getenv('SUPABASE_URL')
+SUPABASE_KEY = os.getenv('SUPABASE_KEY')
+supabase: Client = create_client(SUPABASE_URL, SUPABASE_KEY)
+
+# Инициализация Postgres
+USER = os.getenv('USER')
+PASSWORD = os.getenv('PASSWORD')
+HOST = os.getenv('HOST')
+PORT = os.getenv('PORT')
+DBNAME = os.getenv('DBNAME')
+
+try:
+    connection = psycopg2.connect(
+        user=USER,
+        password=PASSWORD,
+        host=HOST,
+        port=PORT,
+        dbname=DBNAME
+    )
+    print("Connection successful!")
+    connection.close()
+except Exception as e:
+    print(f"Failed to connect: {e}")
 
 @app.route('/')
 def index():
@@ -37,9 +68,15 @@ def upload():
             filename = file.filename
             filepath = os.path.join(app.config['UPLOAD_FOLDER'], filename)
             file.save(filepath)
-            # Здесь можно добавить сохранение информации о видео в базу данных или файл
-            # Например:
-            # save_video_info(video_title, user_name, filename, video_format)
+            
+            # Сохранение информации о видео в Supabase
+            data = {
+                "title": video_title,
+                "username": user_name,
+                "filename": filename,
+                "format": video_format
+            }
+            response = supabase.table('videos').insert(data).execute()
 
             return redirect(url_for('index'))
     return render_template('upload.html')
