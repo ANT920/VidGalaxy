@@ -1,6 +1,4 @@
-__pycache__/
+.env
+/uploads
 *.pyc
-venv/
-uploads/
-avatars/
-*.db
+__pycache__/
