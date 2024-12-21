@@ -16,14 +16,8 @@
             margin-bottom: 1rem;
         }
 
-        .video-card img {
-            width: 100%;
-            border-radius: 10px;
-        }
-
         .video-card h3 {
             margin: 0.5rem 0;
-            text-align: center;
         }
 
         .video-grid {
@@ -62,7 +56,6 @@
             {% for video in videos %}
             <div class="video-card">
                 <a href="{{ url_for('watch', video_id=video.id) }}">
-                    <img src="{{ url_for('static', filename='placeholder.png') }}" alt="Превью видео">
                     <h3>{{ video.title }}</h3>
                 </a>
             </div>
