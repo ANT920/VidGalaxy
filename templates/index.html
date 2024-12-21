@@ -28,9 +28,21 @@
     </header>
     <main class="main-content">
         <p>{{ connection_status }}</p>
+        <h2>Загруженные видео</h2>
+        <ul>
+            {% for video in videos %}
+                <li>
+                    <h3>{{ video.title }}</h3>
+                    <p>Файл: {{ video.filename }}</p>
+                    <p>Загружено: {{ video.upload_date }}</p>
+                </li>
+            {% endfor %}
+        </ul>
     </main>
     <footer>
         <p>&copy; 2024 VidGalaxy. Все права защищены.</p>
     </footer>
 </body>
+</html>
+
 </html>
