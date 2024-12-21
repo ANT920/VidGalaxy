@@ -1,5 +1,4 @@
 flask
 SQLAlchemy
 python-dotenv
-dropbox
 psycopg2-binary
