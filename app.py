@@ -1,5 +1,5 @@
 from flask import Flask, render_template, request, redirect, url_for
-from sqlalchemy import create_engine, Table, Column, Integer, String, MetaData
+from sqlalchemy import create_engine, Table, Column, BigInteger, Text, MetaData, TIMESTAMP
 from sqlalchemy.orm import sessionmaker
 from dotenv import load_dotenv
 import os
@@ -23,11 +23,14 @@ metadata = MetaData()
 # Определение таблицы videos
 videos = Table(
     'videos', metadata,
-    Column('id', Integer, primary_key=True),
-    Column('title', String),
-    Column('filename', String),
-    Column('upload_date', String)
+    Column('id', BigInteger, primary_key=True),
+    Column('title', Text),
+    Column('filename', Text),
+    Column('upload_date', TIMESTAMP(timezone=True))
 )
+
+# Создание таблицы в базе данных, если её нет
+metadata.create_all(engine)
 
 @app.route('/')
 def home():
@@ -62,7 +65,7 @@ def upload():
             file.save(filepath)
 
             # Сохранение информации о видео в базу данных
-            upload_date = datetime.now().strftime('%Y-%m-%d %H:%M:%S')
+            upload_date = datetime.now()
             new_video = videos.insert().values(title=title, filename=filename, upload_date=upload_date)
             engine.execute(new_video)
             
