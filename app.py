@@ -42,13 +42,14 @@ def home():
         print(f"Connection successful: {data}")
 
         # Получение всех видео из базы данных
-        videos_result = engine.execute(videos.select()).fetchall()
+        videos_data = engine.execute(videos.select()).fetchall()
+        print(f"Fetched videos: {videos_data}")
     except Exception as e:
         connection_status = f"Connection failed: {str(e)}"
         print(f"Connection failed: {str(e)}")
-        videos_result = []
-
-    return render_template('index.html', connection_status=connection_status, videos=videos_result)
+        videos_data = []
+    
+    return render_template('index.html', connection_status=connection_status, videos=videos_data)
 
 @app.route('/short')
 def short():
@@ -76,6 +77,11 @@ def upload():
             print(f"File uploaded and data saved: {filename}")
             return redirect(url_for('upload'))
     return render_template('upload.html')
+
+@app.route('/watch/<int:video_id>')
+def watch(video_id):
+    video = engine.execute(videos.select().where(videos.c.id == video_id)).fetchone()
+    return render_template('watch.html', video=video)
 
 @app.route('/telegram')
 def telegram():
