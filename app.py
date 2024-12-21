@@ -1,4 +1,4 @@
-from flask import Flask, render_template, request, redirect, url_for
+from flask import Flask, render_template, request, redirect, url_for, send_from_directory
 from sqlalchemy import create_engine, Table, Column, BigInteger, Text, MetaData, TIMESTAMP
 from sqlalchemy.orm import sessionmaker
 from dotenv import load_dotenv
@@ -9,6 +9,12 @@ from datetime import datetime
 load_dotenv()
 
 app = Flask(__name__)
+app.config['UPLOAD_FOLDER'] = 'server_uploads'
+
+# Убедимся, что директория существует при каждом запуске
+if not os.path.exists(app.config['UPLOAD_FOLDER']):
+    os.makedirs(app.config['UPLOAD_FOLDER'])
+    print(f"Created directory: {app.config['UPLOAD_FOLDER']}")
 
 # Получение переменных окружения
 DATABASE_URL = os.environ.get('DATABASE_URL')
@@ -31,15 +37,10 @@ videos = Table(
 # Создание таблицы в базе данных, если её нет
 metadata.create_all(engine)
 
-# Создание папки для хранения файлов, если её нет
-UPLOAD_FOLDER = 'uploads'
-if not os.path.exists(UPLOAD_FOLDER):
-    os.makedirs(UPLOAD_FOLDER)
-
 @app.route('/')
 def home():
-    with engine.connect() as connection:
-        videos_data = connection.execute(videos.select()).fetchall()
+    # Получение всех видео из базы данных
+    videos_data = engine.execute(videos.select()).fetchall()
     return render_template('index.html', videos=videos_data)
 
 @app.route('/short')
@@ -57,26 +58,39 @@ def upload():
         file = request.files['file']
         if file:
             filename = file.filename
-            filepath = os.path.join(UPLOAD_FOLDER, filename)
+            filepath = os.path.join(app.config['UPLOAD_FOLDER'], filename)
             file.save(filepath)
+
+            # Проверка существования файла и вывода сообщений
+            if os.path.exists(filepath):
+                print(f"File successfully saved at: {filepath}")
+            else:
+                print(f"Failed to save file at: {filepath}")
 
             # Сохранение информации о видео в базу данных
             upload_date = datetime.now()
             new_video = videos.insert().values(title=title, filename=filename, upload_date=upload_date)
-            with engine.connect() as connection:
-                connection.execute(new_video)
+            engine.execute(new_video)
             
             return redirect(url_for('upload'))
     return render_template('upload.html')
 
 @app.route('/watch/<int:video_id>')
 def watch(video_id):
-    with engine.connect() as connection:
-        video = connection.execute(videos.select().where(videos.c.id == video_id)).fetchone()
+    video = engine.execute(videos.select().where(videos.c.id == video_id)).fetchone()
     if video:
-        video_url = url_for('static', filename=f'uploads/{video.filename}')
+        video_url = url_for('uploaded_file', filename=video.filename)
         return render_template('watch.html', video=video, video_url=video_url)
     return "Видео не найдено", 404
+
+@app.route('/server_uploads/<filename>')
+def uploaded_file(filename):
+    filepath = os.path.join(app.config['UPLOAD_FOLDER'], filename)
+    if os.path.exists(filepath):
+        print(f"Serving file from: {filepath}")
+        return send_from_directory(app.config['UPLOAD_FOLDER'], filename)
+    print(f"File not found: {filepath}")
+    return "Файл не найден", 404
 
 @app.route('/telegram')
 def telegram():
