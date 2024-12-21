@@ -11,9 +11,10 @@ load_dotenv()
 app = Flask(__name__)
 app.config['UPLOAD_FOLDER'] = 'server_uploads'
 
-# Убедимся, что директория существует
+# Убедимся, что директория существует при каждом запуске
 if not os.path.exists(app.config['UPLOAD_FOLDER']):
     os.makedirs(app.config['UPLOAD_FOLDER'])
+    print(f"Created directory: {app.config['UPLOAD_FOLDER']}")
 
 # Получение переменных окружения
 DATABASE_URL = os.environ.get('DATABASE_URL')
@@ -59,6 +60,12 @@ def upload():
             filename = file.filename
             filepath = os.path.join(app.config['UPLOAD_FOLDER'], filename)
             file.save(filepath)
+
+            # Проверка существования файла и вывода сообщений
+            if os.path.exists(filepath):
+                print(f"File successfully saved at: {filepath}")
+            else:
+                print(f"Failed to save file at: {filepath}")
 
             # Сохранение информации о видео в базу данных
             upload_date = datetime.now()
