@@ -1,4 +1,5 @@
-from flask import Flask, render_template, request, redirect, url_for, send_from_directory
+import dropbox
+from flask import Flask, render_template, request, redirect, url_for
 from sqlalchemy import create_engine, Table, Column, BigInteger, Text, MetaData, TIMESTAMP
 from sqlalchemy.orm import sessionmaker
 from dotenv import load_dotenv
@@ -9,12 +10,9 @@ from datetime import datetime
 load_dotenv()
 
 app = Flask(__name__)
-app.config['UPLOAD_FOLDER'] = 'server_uploads'
 
-# Убедимся, что директория существует при каждом запуске
-if not os.path.exists(app.config['UPLOAD_FOLDER']):
-    os.makedirs(app.config['UPLOAD_FOLDER'])
-    print(f"Created directory: {app.config['UPLOAD_FOLDER']}")
+# Настройка клиента Dropbox
+dbx = dropbox.Dropbox(os.environ.get('DROPBOX_ACCESS_TOKEN'))
 
 # Получение переменных окружения
 DATABASE_URL = os.environ.get('DATABASE_URL')
@@ -58,14 +56,8 @@ def upload():
         file = request.files['file']
         if file:
             filename = file.filename
-            filepath = os.path.join(app.config['UPLOAD_FOLDER'], filename)
-            file.save(filepath)
-
-            # Проверка существования файла и вывода сообщений
-            if os.path.exists(filepath):
-                print(f"File successfully saved at: {filepath}")
-            else:
-                print(f"Failed to save file at: {filepath}")
+            filepath = f"/{filename}"
+            dbx.files_upload(file.read(), filepath)
 
             # Сохранение информации о видео в базу данных
             upload_date = datetime.now()
@@ -79,18 +71,10 @@ def upload():
 def watch(video_id):
     video = engine.execute(videos.select().where(videos.c.id == video_id)).fetchone()
     if video:
-        video_url = url_for('uploaded_file', filename=video.filename)
+        shared_link_metadata = dbx.sharing_create_shared_link_with_settings(f"/{video.filename}")
+        video_url = shared_link_metadata.url.replace("?dl=0", "?raw=1")
         return render_template('watch.html', video=video, video_url=video_url)
     return "Видео не найдено", 404
-
-@app.route('/server_uploads/<filename>')
-def uploaded_file(filename):
-    filepath = os.path.join(app.config['UPLOAD_FOLDER'], filename)
-    if os.path.exists(filepath):
-        print(f"Serving file from: {filepath}")
-        return send_from_directory(app.config['UPLOAD_FOLDER'], filename)
-    print(f"File not found: {filepath}")
-    return "Файл не найден", 404
 
 @app.route('/telegram')
 def telegram():
@@ -99,4 +83,3 @@ def telegram():
 if __name__ == '__main__':
     port = int(os.environ.get('PORT', 5000))
     app.run(host='0.0.0.0', port=port, debug=True)
-
