@@ -85,7 +85,12 @@ def watch(video_id):
 
 @app.route('/server_uploads/<filename>')
 def uploaded_file(filename):
-    return send_from_directory(app.config['UPLOAD_FOLDER'], filename)
+    filepath = os.path.join(app.config['UPLOAD_FOLDER'], filename)
+    if os.path.exists(filepath):
+        print(f"Serving file from: {filepath}")
+        return send_from_directory(app.config['UPLOAD_FOLDER'], filename)
+    print(f"File not found: {filepath}")
+    return "Файл не найден", 404
 
 @app.route('/telegram')
 def telegram():
