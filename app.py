@@ -1,4 +1,3 @@
-import dropbox
 from flask import Flask, render_template, request, redirect, url_for
 from sqlalchemy import create_engine, Table, Column, BigInteger, Text, MetaData, TIMESTAMP
 from sqlalchemy.orm import sessionmaker
@@ -10,13 +9,6 @@ from datetime import datetime
 load_dotenv()
 
 app = Flask(__name__)
-
-# Настройка клиента Dropbox
-dropbox_access_token = os.getenv('DROPBOX_ACCESS_TOKEN')
-if not dropbox_access_token:
-    raise ValueError("Нет токена доступа к Dropbox. Убедитесь, что переменная окружения DROPBOX_ACCESS_TOKEN установлена.")
-
-dbx = dropbox.Dropbox(dropbox_access_token)
 
 # Получение переменных окружения
 DATABASE_URL = os.environ.get('DATABASE_URL')
@@ -39,6 +31,11 @@ videos = Table(
 # Создание таблицы в базе данных, если её нет
 metadata.create_all(engine)
 
+# Создание папки для хранения файлов, если её нет
+UPLOAD_FOLDER = 'uploads'
+if not os.path.exists(UPLOAD_FOLDER):
+    os.makedirs(UPLOAD_FOLDER)
+
 @app.route('/')
 def home():
     with engine.connect() as connection:
@@ -60,7 +57,7 @@ def upload():
         file = request.files['file']
         if file:
             filename = file.filename
-            filepath = os.path.join('uploads', filename)
+            filepath = os.path.join(UPLOAD_FOLDER, filename)
             file.save(filepath)
 
             # Сохранение информации о видео в базу данных
