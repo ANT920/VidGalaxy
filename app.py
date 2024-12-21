@@ -1,5 +1,4 @@
-import base64
-from flask import Flask, render_template, request, redirect, url_for
+from flask import Flask, render_template, request, redirect, url_for, send_from_directory
 from sqlalchemy import create_engine, Table, Column, BigInteger, Text, MetaData, TIMESTAMP
 from sqlalchemy.orm import sessionmaker
 from dotenv import load_dotenv
@@ -10,6 +9,7 @@ from datetime import datetime
 load_dotenv()
 
 app = Flask(__name__)
+app.config['UPLOAD_FOLDER'] = 'server_uploads'
 
 # Получение переменных окружения
 DATABASE_URL = os.environ.get('DATABASE_URL')
@@ -26,7 +26,6 @@ videos = Table(
     Column('id', BigInteger, primary_key=True),
     Column('title', Text),
     Column('filename', Text),
-    Column('video_data', Text),
     Column('upload_date', TIMESTAMP(timezone=True))
 )
 
@@ -67,11 +66,22 @@ def upload():
         file = request.files['file']
         if file:
             filename = file.filename
-            video_data = base64.b64encode(file.read()).decode('utf-8')  # Кодируем содержимое файла в base64
+            filepath = os.path.join(app.config['UPLOAD_FOLDER'], filename)
+            try:
+                file.save(filepath)
+                print(f"File saved at: {filepath}")
+            except Exception as e:
+                print(f"Failed to save file: {str(e)}")
+
+            # Проверка существования файла
+            if os.path.exists(filepath):
+                print(f"File successfully saved at: {filepath}")
+            else:
+                print(f"File not found at: {filepath}")
 
             # Сохранение информации о видео в базу данных
             upload_date = datetime.now()
-            new_video = videos.insert().values(title=title, filename=filename, video_data=video_data, upload_date=upload_date)
+            new_video = videos.insert().values(title=title, filename=filename, upload_date=upload_date)
             engine.execute(new_video)
             
             print(f"File uploaded and data saved: {filename}")
@@ -82,21 +92,13 @@ def upload():
 def watch(video_id):
     video = engine.execute(videos.select().where(videos.c.id == video_id)).fetchone()
     if video:
-        video_data = base64.b64decode(video.video_data)  # Декодируем base64 строку в байты
-        video_url = url_for('video_data', video_id=video_id)  # Генерируем URL для видео данных
+        video_url = url_for('uploaded_file', filename=video.filename)
         return render_template('watch.html', video=video, video_url=video_url)
     return "Видео не найдено", 404
 
-@app.route('/video_data/<int:video_id>')
-def video_data(video_id):
-    video = engine.execute(videos.select().where(videos.c.id == video_id)).fetchone()
-    if video:
-        video_data = base64.b64decode(video.video_data)  # Декодируем base64 строку в байты
-        return video_data, {
-            'Content-Type': 'video/mp4',
-            'Content-Disposition': f'inline; filename="{video.filename}"'
-        }
-    return "Видео не найдено", 404
+@app.route('/server_uploads/<filename>')
+def uploaded_file(filename):
+    return send_from_directory(app.config['UPLOAD_FOLDER'], filename)
 
 @app.route('/telegram')
 def telegram():
