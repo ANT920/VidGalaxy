@@ -26,8 +26,11 @@ engine = create_engine(DATABASE_URL)
 def check_database_connection():
     try:
         with engine.connect() as connection:
-            connection.execute("SELECT 1")
-        print("Подключение к базе данных успешно!")
+            result = connection.execute("SELECT 1").fetchone()
+            if result:
+                print("Подключение к базе данных успешно!")
+            else:
+                print("Не удалось выполнить запрос к базе данных.")
     except Exception as e:
         print(f"Ошибка подключения к базе данных: {e}")
 
