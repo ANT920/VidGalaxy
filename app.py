@@ -1,8 +1,9 @@
 from flask import Flask, render_template, request, redirect, url_for
-from supabase import create_client, Client
 import os
 from dotenv import load_dotenv
 import psycopg2
+import requests
+import json
 
 # Загрузка переменных окружения из .env файла
 load_dotenv()
@@ -19,10 +20,14 @@ if not os.path.exists(UPLOAD_FOLDER):
 def allowed_file(filename):
     return '.' in filename and filename.rsplit('.', 1)[1].lower() in ALLOWED_EXTENSIONS
 
-# Инициализация Supabase
+# Инициализация переменных окружения для Supabase
 SUPABASE_URL = os.getenv('SUPABASE_URL')
 SUPABASE_KEY = os.getenv('SUPABASE_KEY')
-supabase: Client = create_client(SUPABASE_URL, SUPABASE_KEY)
+SUPABASE_HEADERS = {
+    "Content-Type": "application/json",
+    "apikey": SUPABASE_KEY,
+    "Authorization": f"Bearer {SUPABASE_KEY}"
+}
 
 # Инициализация Postgres
 USER = os.getenv('USER')
@@ -69,14 +74,19 @@ def upload():
             filepath = os.path.join(app.config['UPLOAD_FOLDER'], filename)
             file.save(filepath)
             
-            # Сохранение информации о видео в Supabase
+            # Сохранение информации о видео в Supabase через REST API
             data = {
                 "title": video_title,
                 "username": user_name,
                 "filename": filename,
                 "format": video_format
             }
-            response = supabase.table('videos').insert(data).execute()
+            response = requests.post(f"{SUPABASE_URL}/rest/v1/videos", headers=SUPABASE_HEADERS, data=json.dumps(data))
+
+            if response.status_code == 201:
+                print("Video info saved successfully!")
+            else:
+                print(f"Failed to save video info: {response.text}")
 
             return redirect(url_for('index'))
     return render_template('upload.html')
@@ -87,4 +97,3 @@ def telegram():
 
 if __name__ == '__main__':
     app.run(debug=True)
-
