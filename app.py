@@ -12,7 +12,11 @@ load_dotenv()
 app = Flask(__name__)
 
 # Настройка клиента Dropbox
-dbx = dropbox.Dropbox(os.environ.get('DROPBOX_ACCESS_TOKEN'))
+dropbox_access_token = os.getenv('DROPBOX_ACCESS_TOKEN')
+if not dropbox_access_token:
+    raise ValueError("Нет токена доступа к Dropbox. Убедитесь, что переменная окружения DROPBOX_ACCESS_TOKEN установлена.")
+
+dbx = dropbox.Dropbox(dropbox_access_token)
 
 # Получение переменных окружения
 DATABASE_URL = os.environ.get('DATABASE_URL')
