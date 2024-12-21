@@ -6,6 +6,56 @@
     <title>Upload - VidGalaxy</title>
     <link rel="stylesheet" href="{{ url_for('static', filename='styles.css') }}">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.15.3/css/all.min.css">
+    <style>
+        /* Дополнительные стили для страницы загрузки */
+        .upload-container {
+            background-color: #2c2c2c;
+            padding: 2rem;
+            border-radius: 10px;
+            box-shadow: 0 4px 8px rgba(0, 0, 0, 0.2);
+            max-width: 600px;
+            margin: 2rem auto;
+        }
+
+        .upload-container h1 {
+            margin-bottom: 1.5rem;
+            color: #a259ff;
+            text-align: center;
+        }
+
+        .upload-container label {
+            display: block;
+            margin-bottom: 0.5rem;
+            font-weight: bold;
+        }
+
+        .upload-container input[type="text"],
+        .upload-container input[type="file"] {
+            width: 100%;
+            padding: 0.75rem;
+            margin-bottom: 1rem;
+            border: 1px solid #333;
+            border-radius: 5px;
+            background-color: #444;
+            color: #fff;
+        }
+
+        .upload-container button {
+            width: 100%;
+            padding: 0.75rem;
+            background-color: #a259ff;
+            color: #fff;
+            border: none;
+            border-radius: 5px;
+            font-size: 1rem;
+            cursor: pointer;
+            transition: background-color 0.3s;
+        }
+
+        .upload-container button:hover {
+            background-color: #8a47d6;
+        }
+    </style>
 </head>
 <body>
     <header>
@@ -27,19 +77,21 @@
         </div>
     </header>
     <main class="main-content">
-        <h1>Загрузить видео</h1>
-        <!-- Форма загрузки видео -->
-        <form action="/upload" method="post" enctype="multipart/form-data">
-            <div>
-                <label for="title">Название видео:</label>
-                <input type="text" name="title" id="title" required>
-            </div>
-            <div>
-                <label for="file">Выберите видеофайл:</label>
-                <input type="file" name="file" id="file" accept="video/*" required>
-            </div>
-            <button type="submit">Загрузить</button>
-        </form>
+        <div class="upload-container">
+            <h1>Загрузить видео</h1>
+            <!-- Форма загрузки видео -->
+            <form action="/upload" method="post" enctype="multipart/form-data">
+                <div>
+                    <label for="title">Название видео:</label>
+                    <input type="text" name="title" id="title" required>
+                </div>
+                <div>
+                    <label for="file">Выберите видеофайл:</label>
+                    <input type="file" name="file" id="file" accept="video/*" required>
+                </div>
+                <button type="submit">Загрузить</button>
+            </form>
+        </div>
     </main>
     <footer>
         <p>&copy; 2024 VidGalaxy. Все права защищены.</p>
