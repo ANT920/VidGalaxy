@@ -1,0 +1,39 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>{{ video.title }} - VidGalaxy</title>
+    <link rel="stylesheet" href="{{ url_for('static', filename='styles.css') }}">
+</head>
+<body>
+    <header>
+        <div class="logo">
+            <img src="{{ url_for('static', filename='VidGalaxy Alpha white.png') }}" alt="VidGalaxy Логотип">
+        </div>
+        <nav>
+            <ul class="nav-horizontal">
+                <li><a href="/"><i class="fa fa-home"></i>Главная</a></li>
+                <li><a href="/short"><i class="fa fa-video"></i>Shorts</a></li>
+                <li><a href="/trending"><i class="fa fa-fire"></i>В тренде</a></li>
+                <li><a href="/upload"><i class="fa fa-upload"></i>Загрузить видео</a></li>
+                <li><a href="/telegram"><i class="fa fa-paper-plane"></i>Telegram-канал</a></li>
+            </ul>
+        </nav>
+        <div class="search-bar">
+            <input type="text" placeholder="Поиск видео">
+            <button type="button"><i class="fas fa-search"></i></button>
+        </div>
+    </header>
+    <main class="main-content">
+        <h1>{{ video.title }}</h1>
+        <video controls>
+            <source src="{{ url_for('static', filename='uploads/' + video.filename) }}" type="video/mp4">
+            Ваш браузер не поддерживает тег видео.
+        </video>
+    </main>
+    <footer>
+        <p>&copy; 2024 VidGalaxy. Все права защищены.</p>
+    </footer>
+</body>
+</html>
