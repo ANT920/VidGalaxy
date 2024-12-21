@@ -1,3 +1,4 @@
+import base64
 from flask import Flask, render_template, request, redirect, url_for
 from sqlalchemy import create_engine, Table, Column, BigInteger, Text, MetaData, TIMESTAMP
 from sqlalchemy.orm import sessionmaker
@@ -9,7 +10,6 @@ from datetime import datetime
 load_dotenv()
 
 app = Flask(__name__)
-app.config['UPLOAD_FOLDER'] = 'static/uploads'
 
 # Получение переменных окружения
 DATABASE_URL = os.environ.get('DATABASE_URL')
@@ -26,6 +26,7 @@ videos = Table(
     Column('id', BigInteger, primary_key=True),
     Column('title', Text),
     Column('filename', Text),
+    Column('video_data', Text),
     Column('upload_date', TIMESTAMP(timezone=True))
 )
 
@@ -66,12 +67,11 @@ def upload():
         file = request.files['file']
         if file:
             filename = file.filename
-            filepath = os.path.join(app.config['UPLOAD_FOLDER'], filename)
-            file.save(filepath)
+            video_data = base64.b64encode(file.read()).decode('utf-8')  # Кодируем содержимое файла в base64
 
             # Сохранение информации о видео в базу данных
             upload_date = datetime.now()
-            new_video = videos.insert().values(title=title, filename=filename, upload_date=upload_date)
+            new_video = videos.insert().values(title=title, filename=filename, video_data=video_data, upload_date=upload_date)
             engine.execute(new_video)
             
             print(f"File uploaded and data saved: {filename}")
@@ -81,7 +81,22 @@ def upload():
 @app.route('/watch/<int:video_id>')
 def watch(video_id):
     video = engine.execute(videos.select().where(videos.c.id == video_id)).fetchone()
-    return render_template('watch.html', video=video)
+    if video:
+        video_data = base64.b64decode(video.video_data)  # Декодируем base64 строку в байты
+        video_url = url_for('video_data', video_id=video_id)  # Генерируем URL для видео данных
+        return render_template('watch.html', video=video, video_url=video_url)
+    return "Видео не найдено", 404
+
+@app.route('/video_data/<int:video_id>')
+def video_data(video_id):
+    video = engine.execute(videos.select().where(videos.c.id == video_id)).fetchone()
+    if video:
+        video_data = base64.b64decode(video.video_data)  # Декодируем base64 строку в байты
+        return video_data, {
+            'Content-Type': 'video/mp4',
+            'Content-Disposition': f'inline; filename="{video.filename}"'
+        }
+    return "Видео не найдено", 404
 
 @app.route('/telegram')
 def telegram():
