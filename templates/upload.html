@@ -28,7 +28,18 @@
     </header>
     <main class="main-content">
         <h1>Загрузить видео</h1>
-        <!-- Динамическое отображение видео -->
+        <!-- Форма загрузки видео -->
+        <form action="/upload" method="post" enctype="multipart/form-data">
+            <div>
+                <label for="title">Название видео:</label>
+                <input type="text" name="title" id="title" required>
+            </div>
+            <div>
+                <label for="file">Выберите видеофайл:</label>
+                <input type="file" name="file" id="file" accept="video/*" required>
+            </div>
+            <button type="submit">Загрузить</button>
+        </form>
     </main>
     <footer>
         <p>&copy; 2024 VidGalaxy. Все права защищены.</p>
