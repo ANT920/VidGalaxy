@@ -16,10 +16,15 @@ engine = create_engine(DATABASE_URL)
 
 @app.route('/')
 def home():
-    # Пример запроса к базе данных
-    result = engine.execute("SELECT 1")
-    data = result.fetchall()
-    return render_template('index.html', data=data)
+    try:
+        # Пример запроса к базе данных
+        result = engine.execute("SELECT 1")
+        data = result.fetchone()
+        connection_status = "Connection successful!"
+    except Exception as e:
+        connection_status = f"Connection failed: {str(e)}"
+    
+    return render_template('index.html', connection_status=connection_status)
 
 @app.route('/short')
 def short():
