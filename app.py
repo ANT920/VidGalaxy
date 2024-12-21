@@ -1,22 +1,14 @@
-import dropbox
+import os
 from flask import Flask, render_template, request, redirect, url_for
 from sqlalchemy import create_engine, Table, Column, BigInteger, Text, MetaData, TIMESTAMP
 from sqlalchemy.orm import sessionmaker
 from dotenv import load_dotenv
-import os
 from datetime import datetime
 
 # Загрузка переменных окружения из файла .env
 load_dotenv()
 
 app = Flask(__name__)
-
-# Настройка клиента Dropbox
-dropbox_access_token = os.getenv('DROPBOX_ACCESS_TOKEN')
-if not dropbox_access_token:
-    raise ValueError("Нет токена доступа к Dropbox. Убедитесь, что переменная окружения DROPBOX_ACCESS_TOKEN установлена.")
-
-dbx = dropbox.Dropbox(dropbox_access_token)
 
 # Получение переменных окружения
 DATABASE_URL = os.environ.get('DATABASE_URL')
@@ -39,6 +31,11 @@ videos = Table(
 # Создание таблицы в базе данных, если её нет
 metadata.create_all(engine)
 
+# Создание папки для хранения файлов, если её нет
+UPLOAD_FOLDER = 'uploads'
+if not os.path.exists(UPLOAD_FOLDER):
+    os.makedirs(UPLOAD_FOLDER)
+
 @app.route('/')
 def home():
     with engine.connect() as connection:
@@ -60,8 +57,8 @@ def upload():
         file = request.files['file']
         if file:
             filename = file.filename
-            filepath = f"/{filename}"
-            dbx.files_upload(file.read(), filepath)
+            filepath = os.path.join(UPLOAD_FOLDER, filename)
+            file.save(filepath)
 
             # Сохранение информации о видео в базу данных
             upload_date = datetime.now()
@@ -77,8 +74,7 @@ def watch(video_id):
     with engine.connect() as connection:
         video = connection.execute(videos.select().where(videos.c.id == video_id)).fetchone()
     if video:
-        shared_link_metadata = dbx.sharing_create_shared_link_with_settings(f"/{video.filename}")
-        video_url = shared_link_metadata.url.replace("?dl=0", "?raw=1")
+        video_url = url_for('static', filename=f'uploads/{video.filename}')
         return render_template('watch.html', video=video, video_url=video_url)
     return "Видео не найдено", 404
 
