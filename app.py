@@ -34,22 +34,9 @@ metadata.create_all(engine)
 
 @app.route('/')
 def home():
-    try:
-        # Пример запроса к базе данных
-        result = engine.execute("SELECT 1")
-        data = result.fetchone()
-        connection_status = "Connection successful!"
-        print(f"Connection successful: {data}")
-
-        # Получение всех видео из базы данных
-        videos_data = engine.execute(videos.select()).fetchall()
-        print(f"Fetched videos: {videos_data}")
-    except Exception as e:
-        connection_status = f"Connection failed: {str(e)}"
-        print(f"Connection failed: {str(e)}")
-        videos_data = []
-    
-    return render_template('index.html', connection_status=connection_status, videos=videos_data)
+    # Получение всех видео из базы данных
+    videos_data = engine.execute(videos.select()).fetchall()
+    return render_template('index.html', videos=videos_data)
 
 @app.route('/short')
 def short():
@@ -67,24 +54,19 @@ def upload():
         if file:
             filename = file.filename
             filepath = os.path.join(app.config['UPLOAD_FOLDER'], filename)
-            try:
-                file.save(filepath)
-                print(f"File saved at: {filepath}")
-            except Exception as e:
-                print(f"Failed to save file: {str(e)}")
+            file.save(filepath)
 
-            # Проверка существования файла
+            # Проверка существования файла и вывода сообщений
             if os.path.exists(filepath):
                 print(f"File successfully saved at: {filepath}")
             else:
-                print(f"File not found at: {filepath}")
+                print(f"Failed to save file at: {filepath}")
 
             # Сохранение информации о видео в базу данных
             upload_date = datetime.now()
             new_video = videos.insert().values(title=title, filename=filename, upload_date=upload_date)
             engine.execute(new_video)
             
-            print(f"File uploaded and data saved: {filename}")
             return redirect(url_for('upload'))
     return render_template('upload.html')
 
