@@ -1,8 +1,0 @@
-[build]
-  command = "npm run build"
-  publish = "build"
-
-[context.production.environment]
-  SUPABASE_URL = "https://ikcwkikcnlwroudglxni.supabase.co"
-  SUPABASE_KEY = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImlrY3draWtjbmx3cm91ZGdseG5pIiwicm9sZSI6ImFub24iLCJpYXQiOjE3MzM4NTc2NDYsImV4cCI6MjA0OTQzMzY0Nn0.i7xgRVpIWcIdp4peXJ60JAJOfgYDyLP2sx3Sdr0q7Vs"
-  DATABASE_URL = "postgresql://postgres:ant9_database2009@aws-0-eu-central-1.pooler.supabase.com:5432/postgres"
