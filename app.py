@@ -37,8 +37,8 @@ metadata.create_all(engine)
 
 @app.route('/')
 def home():
-    # Получение всех видео из базы данных
-    videos_data = engine.execute(videos.select()).fetchall()
+    with engine.connect() as connection:
+        videos_data = connection.execute(videos.select()).fetchall()
     return render_template('index.html', videos=videos_data)
 
 @app.route('/short')
@@ -62,14 +62,16 @@ def upload():
             # Сохранение информации о видео в базу данных
             upload_date = datetime.now()
             new_video = videos.insert().values(title=title, filename=filename, upload_date=upload_date)
-            engine.execute(new_video)
+            with engine.connect() as connection:
+                connection.execute(new_video)
             
             return redirect(url_for('upload'))
     return render_template('upload.html')
 
 @app.route('/watch/<int:video_id>')
 def watch(video_id):
-    video = engine.execute(videos.select().where(videos.c.id == video_id)).fetchone()
+    with engine.connect() as connection:
+        video = connection.execute(videos.select().where(videos.c.id == video_id)).fetchone()
     if video:
         shared_link_metadata = dbx.sharing_create_shared_link_with_settings(f"/{video.filename}")
         video_url = shared_link_metadata.url.replace("?dl=0", "?raw=1")
