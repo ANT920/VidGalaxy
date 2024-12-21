@@ -9,7 +9,7 @@ from datetime import datetime
 load_dotenv()
 
 app = Flask(__name__)
-app.config['UPLOAD_FOLDER'] = 'uploads'
+app.config['UPLOAD_FOLDER'] = 'static/uploads'
 
 # Получение переменных окружения
 DATABASE_URL = os.environ.get('DATABASE_URL')
