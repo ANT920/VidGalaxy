@@ -17,7 +17,7 @@ engine = create_engine(DATABASE_URL)
 @app.route('/')
 def home():
     # Пример запроса к базе данных
-    result = engine.execute("SELECT * FROM your_table")
+    result = engine.execute("SELECT 1")
     data = result.fetchall()
     return render_template('index.html', data=data)
 
