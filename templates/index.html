@@ -6,6 +6,41 @@
     <title>VidGalaxy</title>
     <link rel="stylesheet" href="{{ url_for('static', filename='styles.css') }}">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.15.3/css/all.min.css">
+    <style>
+        .video-card {
+            border: 1px solid #333;
+            border-radius: 10px;
+            padding: 1rem;
+            background-color: #2c2c2c;
+            color: #fff;
+            margin-bottom: 1rem;
+        }
+
+        .video-card img {
+            width: 100%;
+            border-radius: 10px;
+        }
+
+        .video-card h3 {
+            margin: 0.5rem 0;
+        }
+
+        .video-card p {
+            margin: 0.5rem 0;
+            color: #a259ff;
+        }
+
+        .video-grid {
+            display: grid;
+            grid-template-columns: repeat(3, 1fr);
+            gap: 1rem;
+        }
+
+        .video-card a {
+            text-decoration: none;
+            color: inherit;
+        }
+    </style>
 </head>
 <body>
     <header>
@@ -27,22 +62,20 @@
         </div>
     </header>
     <main class="main-content">
-        <p>{{ connection_status }}</p>
-        <h2>Загруженные видео</h2>
-        <ul>
+        <div class="video-grid">
             {% for video in videos %}
-                <li>
+            <div class="video-card">
+                <a href="{{ url_for('watch', video_id=video.id) }}">
+                    <img src="{{ url_for('static', filename='placeholder.png') }}" alt="Превью видео">
                     <h3>{{ video.title }}</h3>
-                    <p>Файл: {{ video.filename }}</p>
-                    <p>Загружено: {{ video.upload_date }}</p>
-                </li>
+                    <p>{{ video.filename }}</p>
+                </a>
+            </div>
             {% endfor %}
-        </ul>
+        </div>
     </main>
     <footer>
         <p>&copy; 2024 VidGalaxy. Все права защищены.</p>
     </footer>
 </body>
-</html>
-
 </html>
