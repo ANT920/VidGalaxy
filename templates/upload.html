@@ -9,24 +9,37 @@
     <style>
         .upload-container {
             display: flex;
-            flex-direction: column;
-            align-items: center;
             justify-content: center;
-            height: calc(100vh - 100px); /* Высота экрана минус высота шапки */
+            align-items: center;
+            height: calc(100vh - 100px); /* Вычитаем высоту шапки */
+            margin-top: 100px; /* Учитываем высоту шапки */
         }
 
         .upload-form {
-            background-color: #2c2c2c;
-            padding: 2rem;
+            border: 1px solid #333;
             border-radius: 10px;
+            padding: 2rem;
+            background-color: #2c2c2c;
             color: #fff;
         }
 
-        .upload-form input[type="text"],
-        .upload-form input[type="file"],
-        .upload-form button {
+        .upload-form input, .upload-form button {
+            display: block;
             width: 100%;
-            margin: 0.5rem 0;
+            margin-bottom: 1rem;
+            padding: 0.5rem;
+            font-size: 1rem;
+        }
+
+        .upload-form button {
+            background-color: #a259ff;
+            border: none;
+            color: #fff;
+            cursor: pointer;
+        }
+
+        .upload-form button:hover {
+            background-color: #8223ff;
         }
     </style>
 </head>
@@ -51,7 +64,7 @@
     </header>
     <main class="main-content">
         <div class="upload-container">
-            <form class="upload-form" method="POST" enctype="multipart/form-data">
+            <form action="/upload" method="post" enctype="multipart/form-data" class="upload-form">
                 <h2>Загрузить видео</h2>
                 <input type="text" name="title" placeholder="Название видео" required>
                 <input type="file" name="file" required>
