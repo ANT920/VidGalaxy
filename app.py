@@ -21,6 +21,18 @@ DATABASE_URL = os.environ.get('DATABASE_URL')
 
 # Создание подключения к базе данных с настройками кодировки
 engine = create_engine(DATABASE_URL)
+
+# Проверка подключения к базе данных
+def check_database_connection():
+    try:
+        with engine.connect() as connection:
+            connection.execute("SELECT 1")
+        print("Подключение к базе данных успешно!")
+    except Exception as e:
+        print(f"Ошибка подключения к базе данных: {e}")
+
+check_database_connection()
+
 Session = sessionmaker(bind=engine)
 session = Session()
 metadata = MetaData()
