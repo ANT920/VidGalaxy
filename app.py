@@ -19,7 +19,7 @@ if not os.path.exists(app.config['UPLOAD_FOLDER']):
 # Получение переменных окружения
 DATABASE_URL = os.environ.get('DATABASE_URL')
 
-# Создание подключения к базе данных
+# Создание подключения к базе данных с настройками кодировки
 engine = create_engine(DATABASE_URL)
 Session = sessionmaker(bind=engine)
 session = Session()
