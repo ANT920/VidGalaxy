@@ -1,85 +1,169 @@
+@import url('https://fonts.googleapis.com/css2?family=Manrope:wght@400;700&display=swap');
+
+/* Основные стили */
 * {
     margin: 0;
     padding: 0;
     box-sizing: border-box;
-    font-family: 'Arial', sans-serif;
+    font-family: 'Manrope', sans-serif;
 }
 
 body {
-    background-color: #f4f4f4;
-    color: #333;
+    background-color: #1e1e1e;
+    color: #fff;
 }
 
 header {
-    background-color: #2c3e50;
-    color: white;
-    padding: 1rem 0;
-    text-align: center;
-}
-
-header .logo {
-    font-size: 1.5rem;
-    font-weight: bold;
-}
-
-nav ul {
-    list-style: none;
+    background-color: #2c2c2c;
+    padding: 1rem;
     display: flex;
-    justify-content: center;
+    align-items: center;
+    justify-content: space-between;
+}
+
+header .logo img {
+    height: 30px;
+    margin-right: 10px;
+}
+
+.search-bar {
+    display: flex;
+    align-items: center;
+    background-color: #333;
+    border-radius: 5px;
+    padding: 0.5rem;
+}
+
+.search-bar input {
+    background: none;
+    border: none;
+    color: #fff;
+    padding: 0.5rem;
+    outline: none;
+    width: 100%;
+}
+
+.search-bar button {
+    background: none;
+    border: none;
+    color: #a259ff;
+    cursor: pointer;
+}
+
+.nav-horizontal {
+    display: flex;
+    gap: 1rem;
+    list-style: none;
+    padding: 1rem 0;
+}
+
+.nav-horizontal li {
+    display: flex;
+    align-items: center;
+}
+
+.nav-horizontal li a {
+    color: white;
+    text-decoration: none;
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+    transition: transform 0.3s;
+}
+
+.nav-horizontal li a:hover {
+    transform: scale(1.1);
+}
+
+.nav-horizontal .fa {
+    font-size: 24px;
+}
+
+.search-icon {
+    font-size: 20px;
+    color: #a259ff;
+    margin-right: 0.5rem;
+}
+
+.main-content {
+    padding: 2rem;
+    display: grid;
+    grid-template-columns: repeat(3, 1fr);
     gap: 1rem;
 }
 
-nav ul li a {
-    color: white;
-    text-decoration: none;
-    font-size: 1rem;
-}
-
-.hero {
-    text-align: center;
-    padding: 4rem 1rem;
-    background-image: url('hero-bg.jpg');
-    background-size: cover;
-    background-position: center;
-    color: white;
-}
-
-.hero h1 {
-    font-size: 3rem;
+.video-card {
+    background-color: #333;
+    padding: 1rem;
     margin-bottom: 1rem;
-}
-
-.cta-button {
-    background-color: #e74c3c;
-    color: white;
-    padding: 0.5rem 1rem;
-    text-decoration: none;
     border-radius: 5px;
+    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
 }
 
-.features, .about, .contact {
-    padding: 2rem 1rem;
-    text-align: center;
+.video-card img.banner {
+    width: 100%;
+    border-radius: 5px;
+    margin-bottom: 0.5rem;
 }
 
-.features h2, .about h2, .contact h2 {
-    font-size: 2rem;
-    margin-bottom: 1rem;
+.video-card h3 {
+    font-size: 1.5rem;
+    margin-bottom: 0.5rem;
 }
 
-.feature-item {
+.video-card p {
     margin-bottom: 1rem;
 }
 
 footer {
-    background-color: #2c3e50;
+    background-color: #2c2c2c;
     color: white;
     text-align: center;
     padding: 1rem 0;
     margin-top: 2rem;
+    grid-column: span 3;
 }
 
+/* Медиа-запросы для адаптивности */
+@media (max-width: 768px) {
+    .nav-horizontal {
+        justify-content: center;
+    }
+
+    .main-content {
+        grid-template-columns: repeat(2, 1fr);
+        padding: 1rem;
+    }
+
+    .video-card {
+        margin-bottom: 1.5rem;
+    }
 }
+
+@media (max-width: 480px) {
+    .nav-horizontal {
+        flex-direction: column;
+        align-items: center;
+    }
+
+    .main-content {
+        grid-template-columns: 1fr;
+        padding: 1rem;
+    }
+
+    .video-card {
+        padding: 0.5rem;
+    }
+
+    .video-card h3 {
+        font-size: 1.2rem;
+    }
+
+    .video-card p {
+        font-size: 0.9rem;
+    }
+}
+
 
 .video-item p {
     margin: 5px 0;
