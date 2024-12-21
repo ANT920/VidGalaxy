@@ -1,46 +1,9 @@
-from flask import Flask, render_template, request, redirect, url_for
-import os
-from dotenv import load_dotenv
-import psycopg2
-import requests
-import json
-
-# Загрузка переменных окружения из .env файла
-load_dotenv()
+from flask import Flask, render_template
 
 app = Flask(__name__)
-UPLOAD_FOLDER = 'static/uploads'
-ALLOWED_EXTENSIONS = {'mp4', 'mov', 'avi', 'mkv'}
-
-app.config['UPLOAD_FOLDER'] = UPLOAD_FOLDER
-
-if not os.path.exists(UPLOAD_FOLDER):
-    os.makedirs(UPLOAD_FOLDER)
-
-def allowed_file(filename):
-    return '.' in filename and filename.rsplit('.', 1)[1].lower() in ALLOWED_EXTENSIONS
-
-# Инициализация переменных окружения для Supabase
-SUPABASE_URL = os.getenv('SUPABASE_URL')
-SUPABASE_KEY = os.getenv('SUPABASE_KEY')
-SUPABASE_HEADERS = {
-    "Content-Type": "application/json",
-    "apikey": SUPABASE_KEY,
-    "Authorization": f"Bearer {SUPABASE_KEY}"
-}
-
-# Инициализация Postgres
-DATABASE_URL = os.getenv('DATABASE_URL')
-
-try:
-    connection = psycopg2.connect(DATABASE_URL)
-    print("Connection successful!")
-    connection.close()
-except Exception as e:
-    print(f"Failed to connect: {e}")
 
 @app.route('/')
-def index():
+def home():
     return render_template('index.html')
 
 @app.route('/short')
@@ -51,17 +14,17 @@ def short():
 def trending():
     return render_template('trending.html')
 
-@app.route('/upload', methods=['GET', 'POST'])
+@app.route('/upload')
 def upload():
-    if request.method == 'POST':
-        video_title = request.form['videoTitle']
-        user_name = request.form['userName']
-        video_format = request.form['videoFormat']
-        file = request.files['videoUpload']
-        
-        if file and allowed_file(file.filename):
-            filename = file.filename
-            filepath = os.path.join(app.config['UPLOAD_FOLDER'], filename)
+    return render_template('upload.html')
+
+@app.route('/telegram')
+def telegram():
+    return render_template('telegram.html')
+
+if __name__ == '__main__':
+    app.run(debug=True)
+
             file.save(filepath)
             
             # Сохранение информации о видео в Supabase через REST API
