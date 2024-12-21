@@ -30,20 +30,10 @@ SUPABASE_HEADERS = {
 }
 
 # Инициализация Postgres
-USER = os.getenv('USER')
-PASSWORD = os.getenv('PASSWORD')
-HOST = os.getenv('HOST')
-PORT = os.getenv('PORT')
-DBNAME = os.getenv('DBNAME')
+DATABASE_URL = os.getenv('DATABASE_URL')
 
 try:
-    connection = psycopg2.connect(
-        user=USER,
-        password=PASSWORD,
-        host=HOST,
-        port=PORT,
-        dbname=DBNAME
-    )
+    connection = psycopg2.connect(DATABASE_URL)
     print("Connection successful!")
     connection.close()
 except Exception as e:
