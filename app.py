@@ -1,18 +1,33 @@
-from flask import Flask, render_template
-from sqlalchemy import create_engine
+from flask import Flask, render_template, request, redirect, url_for
+from sqlalchemy import create_engine, Table, Column, Integer, String, MetaData
+from sqlalchemy.orm import sessionmaker
 from dotenv import load_dotenv
 import os
+from datetime import datetime
 
 # Загрузка переменных окружения из файла .env
 load_dotenv()
 
 app = Flask(__name__)
+app.config['UPLOAD_FOLDER'] = 'uploads'
 
 # Получение переменных окружения
 DATABASE_URL = os.environ.get('DATABASE_URL')
 
 # Создание подключения к базе данных
 engine = create_engine(DATABASE_URL)
+Session = sessionmaker(bind=engine)
+session = Session()
+metadata = MetaData()
+
+# Определение таблицы videos
+videos = Table(
+    'videos', metadata,
+    Column('id', Integer, primary_key=True),
+    Column('title', String),
+    Column('filename', String),
+    Column('upload_date', String)
+)
 
 @app.route('/')
 def home():
@@ -21,8 +36,10 @@ def home():
         result = engine.execute("SELECT 1")
         data = result.fetchone()
         connection_status = "Connection successful!"
+        print(f"Connection successful: {data}")
     except Exception as e:
         connection_status = f"Connection failed: {str(e)}"
+        print(f"Connection failed: {str(e)}")
     
     return render_template('index.html', connection_status=connection_status)
 
@@ -34,8 +51,23 @@ def short():
 def trending():
     return render_template('trending.html')
 
-@app.route('/upload')
+@app.route('/upload', methods=['GET', 'POST'])
 def upload():
+    if request.method == 'POST':
+        title = request.form['title']
+        file = request.files['file']
+        if file:
+            filename = file.filename
+            filepath = os.path.join(app.config['UPLOAD_FOLDER'], filename)
+            file.save(filepath)
+
+            # Сохранение информации о видео в базу данных
+            upload_date = datetime.now().strftime('%Y-%m-%d %H:%M:%S')
+            new_video = videos.insert().values(title=title, filename=filename, upload_date=upload_date)
+            engine.execute(new_video)
+            
+            print(f"File uploaded and data saved: {filename}")
+            return redirect(url_for('upload'))
     return render_template('upload.html')
 
 @app.route('/telegram')
