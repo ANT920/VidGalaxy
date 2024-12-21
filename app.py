@@ -40,11 +40,15 @@ def home():
         data = result.fetchone()
         connection_status = "Connection successful!"
         print(f"Connection successful: {data}")
+
+        # Получение всех видео из базы данных
+        videos_result = engine.execute(videos.select()).fetchall()
     except Exception as e:
         connection_status = f"Connection failed: {str(e)}"
         print(f"Connection failed: {str(e)}")
-    
-    return render_template('index.html', connection_status=connection_status)
+        videos_result = []
+
+    return render_template('index.html', connection_status=connection_status, videos=videos_result)
 
 @app.route('/short')
 def short():
