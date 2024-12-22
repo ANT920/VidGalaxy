@@ -4,6 +4,7 @@ from sqlalchemy.orm import sessionmaker
 from dotenv import load_dotenv
 import os
 from datetime import datetime
+from sqlalchemy.sql import text
 
 # Загрузка переменных окружения из файла .env
 load_dotenv()
@@ -26,7 +27,7 @@ engine = create_engine(DATABASE_URL)
 def check_database_connection():
     try:
         with engine.connect() as connection:
-            result = connection.execute("SELECT 1").fetchone()
+            result = connection.execute(text("SELECT 1")).fetchone()
             if result:
                 print("Подключение к базе данных успешно!")
             else:
