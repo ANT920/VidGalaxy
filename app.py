@@ -20,7 +20,7 @@ if not os.path.exists(app.config['UPLOAD_FOLDER']):
 # Получение переменных окружения
 DATABASE_URL = os.environ.get('DATABASE_URL')
 
-# Создание подключения к базе данных с настройками кодировки
+# Создание подключения к базе данных
 engine = create_engine(DATABASE_URL)
 
 # Проверка подключения к базе данных
@@ -89,6 +89,7 @@ def upload():
             new_video = videos.insert().values(title=title, filename=filename, upload_date=upload_date)
             with engine.connect() as connection:
                 connection.execute(new_video)
+                connection.commit()  # Применяем изменения
             
             return redirect(url_for('upload'))
     return render_template('upload.html')
