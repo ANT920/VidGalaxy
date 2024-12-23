@@ -101,6 +101,7 @@ def upload():
             new_video = videos.insert().values(title=title, filename=filename, upload_date=upload_date)
             with engine.connect() as connection:
                 connection.execute(new_video)
+                print(f"Video information saved to database: {title}, {filename}, {upload_date}")
             
             return redirect(url_for('upload'))
     return render_template('upload.html')
