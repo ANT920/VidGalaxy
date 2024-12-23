@@ -99,9 +99,13 @@ def upload():
             # Сохранение информации о видео в базу данных
             upload_date = datetime.now()
             new_video = videos.insert().values(title=title, filename=filename, upload_date=upload_date)
-            with engine.connect() as connection:
-                connection.execute(new_video)
-                print(f"Video information saved to database: {title}, {filename}, {upload_date}")
+            try:
+                with engine.connect() as connection:
+                    print("Trying to save video information to database...")
+                    connection.execute(new_video)
+                    print(f"Video information saved to database: {title}, {filename}, {upload_date}")
+            except Exception as e:
+                print(f"Error saving video information to database: {e}")
             
             return redirect(url_for('upload'))
     return render_template('upload.html')
