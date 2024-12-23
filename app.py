@@ -102,7 +102,9 @@ def upload():
             try:
                 with engine.connect() as connection:
                     print("Trying to save video information to database...")
+                    transaction = connection.begin()
                     connection.execute(new_video)
+                    transaction.commit()
                     print(f"Video information saved to database: {title}, {filename}, {upload_date}")
             except Exception as e:
                 print(f"Error saving video information to database: {e}")
