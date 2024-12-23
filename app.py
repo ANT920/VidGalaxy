@@ -86,13 +86,14 @@ def upload():
             else:
                 print(f"Failed to save file at: {filepath}")
 
-            # Сохранение файла в Dropbox
+            # Сохранение файла в Dropbox в папке videos_server
             if DROPBOX_ACCESS_TOKEN:
                 try:
                     dbx = dropbox.Dropbox(DROPBOX_ACCESS_TOKEN)
+                    dropbox_path = f"/videos_server/{filename}"
                     with open(filepath, 'rb') as f:
-                        dbx.files_upload(f.read(), f"/{filename}")
-                    print(f"File successfully uploaded to Dropbox: {filename}")
+                        dbx.files_upload(f.read(), dropbox_path)
+                    print(f"File successfully uploaded to Dropbox at: {dropbox_path}")
                 except Exception as e:
                     print(f"Failed to upload file to Dropbox: {e}")
 
