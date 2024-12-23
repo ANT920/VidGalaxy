@@ -4,6 +4,7 @@ from sqlalchemy.orm import sessionmaker
 from dotenv import load_dotenv
 import os
 from datetime import datetime
+import dropbox
 from sqlalchemy.sql import text
 
 # Загрузка переменных окружения из файла .env
@@ -19,6 +20,7 @@ if not os.path.exists(app.config['UPLOAD_FOLDER']):
 
 # Получение переменных окружения
 DATABASE_URL = os.environ.get('DATABASE_URL')
+DROPBOX_ACCESS_TOKEN = os.getenv('DROPBOX_ACCESS_TOKEN')
 
 # Создание подключения к базе данных
 engine = create_engine(DATABASE_URL)
@@ -84,12 +86,21 @@ def upload():
             else:
                 print(f"Failed to save file at: {filepath}")
 
+            # Сохранение файла в Dropbox
+            if DROPBOX_ACCESS_TOKEN:
+                try:
+                    dbx = dropbox.Dropbox(DROPBOX_ACCESS_TOKEN)
+                    with open(filepath, 'rb') as f:
+                        dbx.files_upload(f.read(), f"/{filename}")
+                    print(f"File successfully uploaded to Dropbox: {filename}")
+                except Exception as e:
+                    print(f"Failed to upload file to Dropbox: {e}")
+
             # Сохранение информации о видео в базу данных
             upload_date = datetime.now()
             new_video = videos.insert().values(title=title, filename=filename, upload_date=upload_date)
             with engine.connect() as connection:
                 connection.execute(new_video)
-                connection.commit()  # Применяем изменения
             
             return redirect(url_for('upload'))
     return render_template('upload.html')
