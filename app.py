@@ -89,6 +89,7 @@ def upload():
             # Сохранение файла в Dropbox в папке videos_server
             if DROPBOX_ACCESS_TOKEN:
                 try:
+                    print("Attempting to upload file to Dropbox...")
                     dbx = dropbox.Dropbox(DROPBOX_ACCESS_TOKEN)
                     dropbox_path = f"/videos_server/{filename}"
                     with open(filepath, 'rb') as f:
@@ -96,6 +97,8 @@ def upload():
                     print(f"File successfully uploaded to Dropbox at: {dropbox_path}")
                 except Exception as e:
                     print(f"Failed to upload file to Dropbox: {e}")
+            else:
+                print("Dropbox access token is missing.")
 
             # Сохранение информации о видео в базу данных
             upload_date = datetime.now()
