@@ -93,8 +93,9 @@ def upload():
                     dbx = dropbox.Dropbox(DROPBOX_ACCESS_TOKEN)
                     dropbox_path = f"/videos_server/{filename}"
                     with open(filepath, 'rb') as f:
-                        dbx.files_upload(f.read(), dropbox_path)
+                        response = dbx.files_upload(f.read(), dropbox_path)
                     print(f"File successfully uploaded to Dropbox at: {dropbox_path}")
+                    print(f"Dropbox response: {response}")
                 except Exception as e:
                     print(f"Failed to upload file to Dropbox: {e}")
             else:
