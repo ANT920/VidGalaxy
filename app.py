@@ -30,7 +30,7 @@ if DROPBOX_ACCESS_TOKEN:
     except Exception as e:
         print(f"Failed to connect to Dropbox: {e}")
 else:
-    print("Dropbox access token is missing."
+    print("Dropbox access token is missing.")
 
 # Создание подключения к базе данных
 engine = create_engine(DATABASE_URL)
@@ -152,3 +152,4 @@ def telegram():
 if __name__ == '__main__':
     port = int(os.environ.get('PORT', 5000))
     app.run(host='0.0.0.0', port=port, debug=True)
+
