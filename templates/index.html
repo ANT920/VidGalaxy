@@ -6,31 +6,6 @@
     <title>VidGalaxy</title>
     <link rel="stylesheet" href="{{ url_for('static', filename='styles.css') }}">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.15.3/css/all.min.css">
-    <style>
-        .video-card {
-            border: 1px solid #333;
-            border-radius: 10px;
-            padding: 1rem;
-            background-color: #2c2c2c;
-            color: #fff;
-            margin-bottom: 1rem;
-        }
-
-        .video-card h3 {
-            margin: 0.5rem 0;
-        }
-
-        .video-grid {
-            display: grid;
-            grid-template-columns: repeat(3, 1fr);
-            gap: 1rem;
-        }
-
-        .video-card a {
-            text-decoration: none;
-            color: inherit;
-        }
-    </style>
 </head>
 <body>
     <header>
@@ -52,15 +27,14 @@
         </div>
     </header>
     <main class="main-content">
-        <div class="video-grid">
+        <h1>Все Видео</h1>
+        <ul>
             {% for video in videos %}
-            <div class="video-card">
-                <a href="{{ url_for('watch', video_id=video.id) }}">
-                    <h3>{{ video.title }}</h3>
-                </a>
-            </div>
+            <li>
+                <a href="{{ url_for('watch_video', video_id=video.id) }}">{{ video.title }}</a>
+            </li>
             {% endfor %}
-        </div>
+        </ul>
     </main>
     <footer>
         <p>&copy; 2024 VidGalaxy. Все права защищены.</p>
