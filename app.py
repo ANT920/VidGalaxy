@@ -131,21 +131,12 @@ def upload():
             return redirect(url_for('upload'))
     return render_template('upload.html')
 
-@app.route('/watch/<int:video_id>')
-def watch(video_id):
+@app.route('/watch_video/<int:video_id>')
+def watch_video(video_id):
     with engine.connect() as connection:
         video = connection.execute(videos.select().where(videos.c.id == video_id)).fetchone()
     if video:
         return render_template('watch.html', video=video)
-    return "Видео не найдено", 404
-
-@app.route('/watch/<int:video_id>')
-def watch(video_id):
-    with engine.connect() as connection:
-        video = connection.execute(videos.select().where(videos.c.id == video_id)).fetchone()
-    if video:
-        video_url = url_for('uploaded_file', filename=video.filename)
-        return render_template('watch.html', video=video, video_url=video_url)
     return "Видео не найдено", 404
 
 @app.route('/server_uploads/<filename>')
