@@ -96,7 +96,7 @@ def upload():
             else:
                 print(f"Failed to save file at: {filepath}")
 
-            # Сохранение файла в Dropbox в папке videos_server
+            # Сохранение файла в Dropbox в папке videos_server и получение URL
             if DROPBOX_ACCESS_TOKEN:
                 try:
                     print("Attempting to upload file to Dropbox...")
@@ -104,28 +104,40 @@ def upload():
                     dropbox_path = f"/videos_server/{filename}"
                     with open(filepath, 'rb') as f:
                         response = dbx.files_upload(f.read(), dropbox_path)
-                    print(f"File successfully uploaded to Dropbox at: {dropbox_path}")
-                    print(f"Dropbox response: {response}")
+                    shared_link_metadata = dbx.sharing_create_shared_link_with_settings(dropbox_path)
+                    dropbox_url = shared_link_metadata.url.replace("?dl=0", "?raw=1")
+                    print(f"File successfully uploaded to Dropbox at: {dropbox_url}")
                 except Exception as e:
                     print(f"Failed to upload file to Dropbox: {e}")
+                    return "Ошибка при загрузке файла в Dropbox", 500
             else:
                 print("Dropbox access token is missing.")
+                return "Токен доступа Dropbox отсутствует", 500
 
             # Сохранение информации о видео в базу данных
             upload_date = datetime.now()
-            new_video = videos.insert().values(title=title, filename=filename, upload_date=upload_date)
+            new_video = videos.insert().values(title=title, filename=dropbox_url, upload_date=upload_date)
             try:
                 with engine.connect() as connection:
                     print("Trying to save video information to database...")
                     transaction = connection.begin()
                     connection.execute(new_video)
                     transaction.commit()
-                    print(f"Video information saved to database: {title}, {filename}, {upload_date}")
+                    print(f"Video information saved to database: {title}, {dropbox_url}, {upload_date}")
             except Exception as e:
                 print(f"Error saving video information to database: {e}")
+                return "Ошибка при сохранении информации о видео в базе данных", 500
             
             return redirect(url_for('upload'))
     return render_template('upload.html')
+
+@app.route('/watch/<int:video_id>')
+def watch(video_id):
+    with engine.connect() as connection:
+        video = connection.execute(videos.select().where(videos.c.id == video_id)).fetchone()
+    if video:
+        return render_template('watch.html', video=video)
+    return "Видео не найдено", 404
 
 @app.route('/watch/<int:video_id>')
 def watch(video_id):
