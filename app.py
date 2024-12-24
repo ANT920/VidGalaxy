@@ -22,6 +22,16 @@ if not os.path.exists(app.config['UPLOAD_FOLDER']):
 DATABASE_URL = os.environ.get('DATABASE_URL')
 DROPBOX_ACCESS_TOKEN = os.getenv('DROPBOX_ACCESS_TOKEN')
 
+if DROPBOX_ACCESS_TOKEN:
+    try:
+        dbx = dropbox.Dropbox(DROPBOX_ACCESS_TOKEN)
+        account_info = dbx.users_get_current_account()
+        print(f"Successfully connected to Dropbox account: {account_info.name.display_name}")
+    except Exception as e:
+        print(f"Failed to connect to Dropbox: {e}")
+else:
+    print("Dropbox access token is missing."
+
 # Создание подключения к базе данных
 engine = create_engine(DATABASE_URL)
 
