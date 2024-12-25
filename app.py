@@ -144,15 +144,6 @@ def watch_video(video_id):
         return render_template('watch.html', video=video)
     return "Видео не найдено", 404
 
-@app.route('/videos/<path:filename>')
-def serve_video(filename):
-    if filename.endswith('.mp4'):
-        response = send_from_directory(app.config['UPLOAD_FOLDER'], filename)
-        response.headers['Access-Control-Allow-Origin'] = '*'
-        response.headers['X-Content-Type-Options'] = 'nosniff'
-        return response
-    return "File not found", 404
-
 if __name__ == '__main__':
     port = int(os.environ.get('PORT', 5000))
     app.run(host='0.0.0.0', port=port, debug=True)
