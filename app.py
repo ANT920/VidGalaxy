@@ -6,11 +6,14 @@ import os
 from datetime import datetime
 import dropbox
 from sqlalchemy.sql import text
+from flask_cors import CORS
 
 # Загрузка переменных окружения из файла .env
 load_dotenv()
 
 app = Flask(__name__)
+CORS(app)
+
 app.config['UPLOAD_FOLDER'] = 'server_uploads'
 
 # Убедимся, что директория существует при каждом запуске
