@@ -6,11 +6,6 @@
     <title>{{ video.title }} - VidGalaxy</title>
     <link rel="stylesheet" href="{{ url_for('static', filename='styles.css') }}">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.15.3/css/all.min.css">
-    <script>
-        function getProxiedUrl(url) {
-            return `/proxy?url=${encodeURIComponent(url)}`;
-        }
-    </script>
 </head>
 <body>
     <header>
@@ -34,7 +29,7 @@
     <main class="main-content">
         <h1>{{ video.title }}</h1>
         <video controls>
-            <source src="{{ getProxiedUrl(video.filename) }}" type="video/mp4">
+            <source src="{{ get_proxied_url(video.filename) }}" type="video/mp4">
             Ваш браузер не поддерживает тег видео.
         </video>
     </main>
