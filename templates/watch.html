@@ -28,10 +28,7 @@
     </header>
     <main class="main-content">
         <h1>{{ video.title }}</h1>
-        <video controls>
-            <source src="{{ video.filename }}" type="video/mp4">
-            Ваш браузер не поддерживает тег видео.
-        </video>
+        <iframe src="{{ video.embed_link }}" width="640" height="360" frameborder="0" allow="autoplay; fullscreen; picture-in-picture" allowfullscreen></iframe>
     </main>
     <footer>
         <p>&copy; 2024 VidGalaxy. Все права защищены.</p>
