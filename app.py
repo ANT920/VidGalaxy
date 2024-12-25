@@ -69,9 +69,6 @@ videos = Table(
 # Создание таблицы в базе данных, если её нет
 metadata.create_all(engine)
 
-def get_proxied_url(url):
-    return f"/proxy?url={url}"
-
 @app.route('/')
 def home():
     # Получение всех видео из базы данных
@@ -145,7 +142,7 @@ def watch_video(video_id):
     if video:
         print(f"Video title: {video.title}")
         print(f"Video filename (Dropbox URL): {video.filename}")
-        return render_template('watch.html', video=video, get_proxied_url=get_proxied_url)
+        return render_template('watch.html', video=video)
     return "Видео не найдено", 404
 
 @app.route('/proxy')
@@ -157,12 +154,16 @@ def proxy():
         dropbox_url = url.replace("?dl=0", "?raw=1")
         print(f"Attempting to proxy request to: {dropbox_url}")
         response = requests.get(dropbox_url, stream=True)
+        print(f"Response status code: {response.status_code}")
         headers = {
             'Access-Control-Allow-Origin': '*',
             'Content-Type': 'video/mp4'
         }
-        print(f"Proxied request successful, status code: {response.status_code}")
-        return Response(response.content, headers=headers)
+        if response.status_code == 200:
+            return Response(response.content, headers=headers)
+        else:
+            print(f"Response content: {response.content}")
+            return "Ошибка при проксировании запроса: получен некорректный статус-код", 500
     except Exception as e:
         print(f"Error proxying request: {e}")
         return f"Ошибка при проксировании запроса: {e}", 500
