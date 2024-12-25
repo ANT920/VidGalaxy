@@ -1,10 +1,9 @@
-from flask import Flask, render_template, request, redirect, url_for, send_from_directory, jsonify, Response
+from flask import Flask, render_template, request, redirect, url_for, send_from_directory, jsonify
 from sqlalchemy import create_engine, Table, Column, BigInteger, Text, MetaData, TIMESTAMP
 from sqlalchemy.orm import sessionmaker
 from dotenv import load_dotenv
 import os
 from datetime import datetime
-import dropbox
 from sqlalchemy.sql import text
 from flask_cors import CORS
 
@@ -23,17 +22,6 @@ if not os.path.exists(app.config['UPLOAD_FOLDER']):
 
 # Получение переменных окружения
 DATABASE_URL = os.environ.get('DATABASE_URL')
-DROPBOX_ACCESS_TOKEN = os.getenv('DROPBOX_ACCESS_TOKEN')
-
-if DROPBOX_ACCESS_TOKEN:
-    try:
-        dbx = dropbox.Dropbox(DROPBOX_ACCESS_TOKEN)
-        account_info = dbx.users_get_current_account()
-        print(f"Successfully connected to Dropbox account: {account_info.name.display_name}")
-    except Exception as e:
-        print(f"Failed to connect to Dropbox: {e}")
-else:
-    print("Dropbox access token is missing.")
 
 # Создание подключения к базе данных
 engine = create_engine(DATABASE_URL)
@@ -87,51 +75,29 @@ def trending():
 def upload():
     if request.method == 'POST':
         title = request.form['title']
-        file = request.files['file']
-        if file:
-            filename = file.filename
-            filepath = os.path.join(app.config['UPLOAD_FOLDER'], filename)
-            file.save(filepath)
-
-            # Проверка существования файла и вывода сообщений
-            if os.path.exists(filepath):
-                print(f"File successfully saved at: {filepath}")
-            else:
-                print(f"Failed to save file at: {filepath}")
-
-            # Сохранение файла в Dropbox в папке videos_server и получение URL
-            if DROPBOX_ACCESS_TOKEN:
-                try:
-                    print("Attempting to upload file to Dropbox...")
-                    dbx = dropbox.Dropbox(DROPBOX_ACCESS_TOKEN)
-                    dropbox_path = f"/videos_server/{filename}"
-                    with open(filepath, 'rb') as f:
-                        response = dbx.files_upload(f.read(), dropbox_path)
-                    shared_link_metadata = dbx.sharing_create_shared_link_with_settings(dropbox_path)
-                    dropbox_url = shared_link_metadata.url.replace("?dl=0", "?raw=1")
-                    print(f"File successfully uploaded to Dropbox at: {dropbox_url}")
-                except Exception as e:
-                    print(f"Failed to upload file to Dropbox: {e}")
-                    return "Ошибка при загрузке файла в Dropbox", 500
-            else:
-                print("Dropbox access token is missing.")
-                return "Токен доступа Dropbox отсутствует", 500
-
+        google_drive_url = request.form['google_drive_url']
+        
+        # Проверка существования ссылки и вывода сообщений
+        if google_drive_url:
+            print(f"Google Drive URL successfully received: {google_drive_url}")
+            
             # Сохранение информации о видео в базу данных
             upload_date = datetime.now()
-            new_video = videos.insert().values(title=title, filename=dropbox_url, upload_date=upload_date)
+            new_video = videos.insert().values(title=title, filename=google_drive_url, upload_date=upload_date)
             try:
                 with engine.connect() as connection:
                     print("Trying to save video information to database...")
                     transaction = connection.begin()
                     connection.execute(new_video)
                     transaction.commit()
-                    print(f"Video information saved to database: {title}, {dropbox_url}, {upload_date}")
+                    print(f"Video information saved to database: {title}, {google_drive_url}, {upload_date}")
             except Exception as e:
                 print(f"Error saving video information to database: {e}")
                 return "Ошибка при сохранении информации о видео в базе данных", 500
             
             return redirect(url_for('upload'))
+        else:
+            return "Ссылка на Google Drive отсутствует", 400
     return render_template('upload.html')
 
 @app.route('/watch_video/<int:video_id>')
@@ -140,7 +106,7 @@ def watch_video(video_id):
         video = connection.execute(videos.select().where(videos.c.id == video_id)).fetchone()
     if video:
         print(f"Video title: {video.title}")
-        print(f"Video filename (Dropbox URL): {video.filename}")
+        print(f"Video filename (Google Drive URL): {video.filename}")
         return render_template('watch.html', video=video)
     return "Видео не найдено", 404
 
