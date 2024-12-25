@@ -145,16 +145,15 @@ def watch_video(video_id):
         return render_template('watch.html', video=video)
     return "Видео не найдено", 404
 
-@app.route('/proxy/<path:url>')
-def proxy(url):
+@app.route('/proxy')
+def proxy():
+    url = request.args.get('url')
+    if not url:
+        return "URL is missing", 400
     try:
-        dropbox_url = f"https://content.dropboxapi.com/2/files/download?arg={url}"
-        headers = {
-            'Authorization': f'Bearer {DROPBOX_ACCESS_TOKEN}',
-            'Dropbox-API-Arg': f'{{"path": "{url}"}}'
-        }
+        dropbox_url = url.replace("?dl=0", "?raw=1")
         print(f"Attempting to proxy request to: {dropbox_url}")
-        response = requests.get(dropbox_url, headers=headers, stream=True)
+        response = requests.get(dropbox_url, stream=True)
         headers = {
             'Access-Control-Allow-Origin': '*',
             'Content-Type': 'video/mp4'
