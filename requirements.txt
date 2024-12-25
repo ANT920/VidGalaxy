@@ -4,4 +4,4 @@ python-dotenv
 vimeo
 psycopg2
 flask_cors
-requests
+requests==2.25.1  # Укажем конкретную версию
