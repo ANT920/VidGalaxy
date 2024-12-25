@@ -152,10 +152,13 @@ def get_temporary_link(video_id):
         try:
             dbx = dropbox.Dropbox(DROPBOX_ACCESS_TOKEN)
             dropbox_path = video.filename.replace("https://www.dropbox.com", "").replace("?raw=1", "")
+            print(f"Attempting to get temporary link for path: {dropbox_path}")
             temp_link_metadata = dbx.files_get_temporary_link(dropbox_path)
             temp_link = temp_link_metadata.link
+            print(f"Temporary link obtained: {temp_link}")
             return jsonify({'temporary_link': temp_link})
         except Exception as e:
+            print(f"Error getting temporary link: {e}")
             return f"Ошибка при получении временной ссылки: {e}", 500
     return "Видео не найдено", 404
 
