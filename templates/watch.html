@@ -6,26 +6,6 @@
     <title>{{ video.title }} - VidGalaxy</title>
     <link rel="stylesheet" href="{{ url_for('static', filename='styles.css') }}">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.15.3/css/all.min.css">
-    <script>
-        async function fetchTemporaryLink(videoId) {
-            try {
-                const response = await fetch(`/get_temporary_link/${videoId}`);
-                const data = await response.json();
-                const videoPlayer = document.getElementById('video-player');
-                videoPlayer.src = data.temporary_link;
-                console.log("Temporary link:", data.temporary_link);
-                document.getElementById('temp-link').innerText = data.temporary_link;
-            } catch (error) {
-                console.error("Error fetching temporary link:", error);
-                document.getElementById('temp-link').innerText = "Ошибка получения временной ссылки";
-            }
-        }
-
-        document.addEventListener("DOMContentLoaded", function() {
-            const videoId = {{ video.id }};
-            fetchTemporaryLink(videoId);
-        });
-    </script>
 </head>
 <body>
     <header>
@@ -48,9 +28,8 @@
     </header>
     <main class="main-content">
         <h1>{{ video.title }}</h1>
-        <p>Temporary Link: <span id="temp-link"></span></p>
-        <video id="video-player" controls>
-            <source src="" type="video/mp4">
+        <video controls>
+            <source src="{{ url_for('proxy', url=video.filename) }}" type="video/mp4">
             Ваш браузер не поддерживает тег видео.
         </video>
     </main>
