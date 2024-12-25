@@ -7,7 +7,6 @@ from datetime import datetime
 import dropbox
 from sqlalchemy.sql import text
 from flask_cors import CORS
-import requests
 
 # Загрузка переменных окружения из файла .env
 load_dotenv()
@@ -144,28 +143,6 @@ def watch_video(video_id):
         print(f"Video filename (Dropbox URL): {video.filename}")
         return render_template('watch.html', video=video)
     return "Видео не найдено", 404
-
-@app.route('/proxy')
-def proxy():
-    url = request.args.get('url')
-    if not url:
-        return "URL is missing", 400
-    try:
-        dropbox_url = url.replace("?dl=0", "?raw=1")
-        print(f"Attempting to proxy request to: {dropbox_url}")
-        response = requests.get(dropbox_url, stream=True)
-        headers = {
-            'Access-Control-Allow-Origin': '*',
-            'Content-Type': 'video/mp4'
-        }
-        if response.status_code == 200:
-            return Response(response.content, headers=headers)
-        else:
-            print(f"Response content: {response.content}")
-            return "Ошибка при проксировании запроса: получен некорректный статус-код", 500
-    except Exception as e:
-        print(f"Error proxying request: {e}")
-        return f"Ошибка при проксировании запроса: {e}", 500
 
 if __name__ == '__main__':
     port = int(os.environ.get('PORT', 5000))
