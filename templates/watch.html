@@ -17,6 +17,7 @@
                 document.getElementById('temp-link').innerText = data.temporary_link;
             } catch (error) {
                 console.error("Error fetching temporary link:", error);
+                document.getElementById('temp-link').innerText = "Ошибка получения временной ссылки";
             }
         }
 
