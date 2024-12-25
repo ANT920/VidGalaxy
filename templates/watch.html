@@ -29,7 +29,7 @@
     <main class="main-content">
         <h1>{{ video.title }}</h1>
         <p>Video URL: {{ video.filename }}</p>
-        <video controls>
+        <video controls crossorigin="anonymous">
             <source src="{{ video.filename }}" type="video/mp4">
             Ваш браузер не поддерживает тег видео.
         </video>
