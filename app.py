@@ -1,9 +1,10 @@
-from flask import Flask, render_template, request, redirect, url_for, send_from_directory, jsonify
+from flask import Flask, render_template, request, redirect, url_for, jsonify
 from sqlalchemy import create_engine, Table, Column, BigInteger, Text, MetaData, TIMESTAMP
 from sqlalchemy.orm import sessionmaker
 from dotenv import load_dotenv
 import os
 from datetime import datetime
+import vimeo
 from sqlalchemy.sql import text
 from flask_cors import CORS
 
@@ -22,6 +23,9 @@ if not os.path.exists(app.config['UPLOAD_FOLDER']):
 
 # Получение переменных окружения
 DATABASE_URL = os.environ.get('DATABASE_URL')
+VIMEO_ACCESS_TOKEN = os.environ.get('VIMEO_ACCESS_TOKEN')
+VIMEO_CLIENT_ID = os.environ.get('VIMEO_CLIENT_ID')
+VIMEO_CLIENT_SECRET = os.environ.get('VIMEO_CLIENT_SECRET')
 
 # Создание подключения к базе данных
 engine = create_engine(DATABASE_URL)
@@ -49,12 +53,19 @@ videos = Table(
     'videos', metadata,
     Column('id', BigInteger, primary_key=True),
     Column('title', Text),
-    Column('filename', Text),
+    Column('embed_link', Text),
     Column('upload_date', TIMESTAMP(timezone=True))
 )
 
 # Создание таблицы в базе данных, если её нет
 metadata.create_all(engine)
+
+# Инициализация клиента Vimeo
+vimeo_client = vimeo.VimeoClient(
+    token=VIMEO_ACCESS_TOKEN,
+    key=VIMEO_CLIENT_ID,
+    secret=VIMEO_CLIENT_SECRET
+)
 
 @app.route('/')
 def home():
@@ -75,29 +86,44 @@ def trending():
 def upload():
     if request.method == 'POST':
         title = request.form['title']
-        google_drive_url = request.form['google_drive_url']
-        
-        # Проверка существования ссылки и вывода сообщений
-        if google_drive_url:
-            print(f"Google Drive URL successfully received: {google_drive_url}")
-            
+        file = request.files['file']
+        if file:
+            filename = file.filename
+            filepath = os.path.join(app.config['UPLOAD_FOLDER'], filename)
+            file.save(filepath)
+
+            # Проверка существования файла и вывода сообщений
+            if os.path.exists(filepath):
+                print(f"File successfully saved at: {filepath}")
+            else:
+                print(f"Failed to save file at: {filepath}")
+
+            # Загрузка файла на Vimeo и получение ссылки для встраивания
+            try:
+                print("Attempting to upload file to Vimeo...")
+                uri = vimeo_client.upload(filepath, data={'name': title})
+                video_id = uri.split('/')[-1]
+                embed_link = f"https://player.vimeo.com/video/{video_id}"
+                print(f"File successfully uploaded to Vimeo at: {embed_link}")
+            except Exception as e:
+                print(f"Failed to upload file to Vimeo: {e}")
+                return "Ошибка при загрузке файла в Vimeo", 500
+
             # Сохранение информации о видео в базу данных
             upload_date = datetime.now()
-            new_video = videos.insert().values(title=title, filename=google_drive_url, upload_date=upload_date)
+            new_video = videos.insert().values(title=title, embed_link=embed_link, upload_date=upload_date)
             try:
                 with engine.connect() as connection:
                     print("Trying to save video information to database...")
                     transaction = connection.begin()
                     connection.execute(new_video)
                     transaction.commit()
-                    print(f"Video information saved to database: {title}, {google_drive_url}, {upload_date}")
+                    print(f"Video information saved to database: {title}, {embed_link}, {upload_date}")
             except Exception as e:
                 print(f"Error saving video information to database: {e}")
                 return "Ошибка при сохранении информации о видео в базе данных", 500
             
             return redirect(url_for('upload'))
-        else:
-            return "Ссылка на Google Drive отсутствует", 400
     return render_template('upload.html')
 
 @app.route('/watch_video/<int:video_id>')
@@ -106,7 +132,7 @@ def watch_video(video_id):
         video = connection.execute(videos.select().where(videos.c.id == video_id)).fetchone()
     if video:
         print(f"Video title: {video.title}")
-        print(f"Video filename (Google Drive URL): {video.filename}")
+        print(f"Vimeo embed link: {video.embed_link}")
         return render_template('watch.html', video=video)
     return "Видео не найдено", 404
 
