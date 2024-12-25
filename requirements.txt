@@ -4,3 +4,4 @@ python-dotenv
 requests
 dropbox
 psycopg2
+flask_cors
