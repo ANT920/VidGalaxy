@@ -5,43 +5,6 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Загрузить видео - VidGalaxy</title>
     <link rel="stylesheet" href="{{ url_for('static', filename='styles.css') }}">
-    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.15.3/css/all.min.css">
-    <style>
-        .upload-container {
-            display: flex;
-            justify-content: center;
-            align-items: center;
-            height: calc(100vh - 100px); /* Вычитаем высоту шапки */
-            margin-top: 100px; /* Учитываем высоту шапки */
-        }
-
-        .upload-form {
-            border: 1px solid #333;
-            border-radius: 10px;
-            padding: 2rem;
-            background-color: #2c2c2c;
-            color: #fff;
-        }
-
-        .upload-form input, .upload-form button {
-            display: block;
-            width: 100%;
-            margin-bottom: 1rem;
-            padding: 0.5rem;
-            font-size: 1rem;
-        }
-
-        .upload-form button {
-            background-color: #a259ff;
-            border: none;
-            color: #fff;
-            cursor: pointer;
-        }
-
-        .upload-form button:hover {
-            background-color: #8223ff;
-        }
-    </style>
 </head>
 <body>
     <header>
@@ -63,14 +26,14 @@
         </div>
     </header>
     <main class="main-content">
-        <div class="upload-container">
-            <form action="/upload" method="post" enctype="multipart/form-data" class="upload-form">
-                <h2>Загрузить видео</h2>
-                <input type="text" name="title" placeholder="Название видео" required>
-                <input type="file" name="file" required>
-                <button type="submit">Загрузить</button>
-            </form>
-        </div>
+        <h1>Загрузить видео</h1>
+        <form action="{{ url_for('upload') }}" method="post" enctype="multipart/form-data">
+            <label for="title">Название видео:</label>
+            <input type="text" id="title" name="title" required><br><br>
+            <label for="google_drive_url">Ссылка на Google Drive:</label>
+            <input type="url" id="google_drive_url" name="google_drive_url" required><br><br>
+            <input type="submit" value="Загрузить">
+        </form>
     </main>
     <footer>
         <p>&copy; 2024 VidGalaxy. Все права защищены.</p>
