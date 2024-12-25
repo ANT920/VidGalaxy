@@ -1,4 +1,4 @@
-from flask import Flask, render_template, request, redirect, url_for, send_from_directory
+from flask import Flask, render_template, request, redirect, url_for, send_from_directory, jsonify
 from sqlalchemy import create_engine, Table, Column, BigInteger, Text, MetaData, TIMESTAMP
 from sqlalchemy.orm import sessionmaker
 from dotenv import load_dotenv
@@ -136,23 +136,20 @@ def watch_video(video_id):
     with engine.connect() as connection:
         video = connection.execute(videos.select().where(videos.c.id == video_id)).fetchone()
     if video:
+        print(f"Video title: {video.title}")
+        print(f"Video filename (Dropbox URL): {video.filename}")
         return render_template('watch.html', video=video)
     return "Видео не найдено", 404
 
-@app.route('/server_uploads/<filename>')
-def uploaded_file(filename):
-    filepath = os.path.join(app.config['UPLOAD_FOLDER'], filename)
-    if os.path.exists(filepath):
-        print(f"Serving file from: {filepath}")
-        return send_from_directory(app.config['UPLOAD_FOLDER'], filename)
-    print(f"File not found: {filepath}")
-    return "Файл не найден", 404
-
-@app.route('/telegram')
-def telegram():
-    return render_template('telegram.html')
+@app.route('/videos/<path:filename>')
+def serve_video(filename):
+    if filename.endswith('.mp4'):
+        response = send_from_directory(app.config['UPLOAD_FOLDER'], filename)
+        response.headers['Access-Control-Allow-Origin'] = '*'
+        response.headers['X-Content-Type-Options'] = 'nosniff'
+        return response
+    return "File not found", 404
 
 if __name__ == '__main__':
     port = int(os.environ.get('PORT', 5000))
     app.run(host='0.0.0.0', port=port, debug=True)
-
