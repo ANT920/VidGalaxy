@@ -2,6 +2,6 @@ flask
 sqlalchemy
 python-dotenv
 requests
-dropbox
+vimeo
 psycopg2
 flask_cors
