@@ -1,4 +1,4 @@
-from flask import Flask, render_template, request, redirect, url_for, send_from_directory, jsonify
+from flask import Flask, render_template, request, redirect, url_for, send_from_directory, jsonify, Response
 from sqlalchemy import create_engine, Table, Column, BigInteger, Text, MetaData, TIMESTAMP
 from sqlalchemy.orm import sessionmaker
 from dotenv import load_dotenv
@@ -143,6 +143,20 @@ def watch_video(video_id):
         print(f"Video filename (Dropbox URL): {video.filename}")
         return render_template('watch.html', video=video)
     return "Видео не найдено", 404
+
+@app.route('/proxy/<path:url>')
+def proxy(url):
+    try:
+        dropbox_url = f"https://content.dropboxapi.com/2/files/download?arg={url}"
+        headers = {
+            'Authorization': f'Bearer {DROPBOX_ACCESS_TOKEN}',
+            'Dropbox-API-Arg': f'{{"path": "{url}"}}'
+        }
+        response = requests.get(dropbox_url, headers=headers, stream=True)
+        response.headers['Access-Control-Allow-Origin'] = '*'
+        return Response(response.content, headers=response.headers)
+    except Exception as e:
+        return f"Ошибка при проксировании запроса: {e}", 500
 
 if __name__ == '__main__':
     port = int(os.environ.get('PORT', 5000))
