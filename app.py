@@ -154,7 +154,6 @@ def proxy():
         dropbox_url = url.replace("?dl=0", "?raw=1")
         print(f"Attempting to proxy request to: {dropbox_url}")
         response = requests.get(dropbox_url, stream=True)
-        print(f"Response status code: {response.status_code}")
         headers = {
             'Access-Control-Allow-Origin': '*',
             'Content-Type': 'video/mp4'
