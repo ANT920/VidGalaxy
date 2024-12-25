@@ -69,6 +69,9 @@ videos = Table(
 # Создание таблицы в базе данных, если её нет
 metadata.create_all(engine)
 
+def get_proxied_url(url):
+    return f"/proxy?url={url}"
+
 @app.route('/')
 def home():
     # Получение всех видео из базы данных
@@ -142,7 +145,7 @@ def watch_video(video_id):
     if video:
         print(f"Video title: {video.title}")
         print(f"Video filename (Dropbox URL): {video.filename}")
-        return render_template('watch.html', video=video)
+        return render_template('watch.html', video=video, get_proxied_url=get_proxied_url)
     return "Видео не найдено", 404
 
 @app.route('/proxy')
