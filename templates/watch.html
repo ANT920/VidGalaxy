@@ -30,7 +30,7 @@
         <h1>{{ video.title }}</h1>
         <p>Video URL: {{ video.filename }}</p>
         <video controls>
-            <source src="{{ video.filename }}" type="video/mp4">
+            <source src="{{ url_for('proxy', url=video.filename) }}" type="video/mp4">
             Ваш браузер не поддерживает тег видео.
         </video>
     </main>
