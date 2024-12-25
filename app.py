@@ -7,6 +7,7 @@ from datetime import datetime
 import dropbox
 from sqlalchemy.sql import text
 from flask_cors import CORS
+import requests
 
 # Загрузка переменных окружения из файла .env
 load_dotenv()
@@ -152,13 +153,16 @@ def proxy(url):
             'Authorization': f'Bearer {DROPBOX_ACCESS_TOKEN}',
             'Dropbox-API-Arg': f'{{"path": "{url}"}}'
         }
+        print(f"Attempting to proxy request to: {dropbox_url}")
         response = requests.get(dropbox_url, headers=headers, stream=True)
         headers = {
             'Access-Control-Allow-Origin': '*',
             'Content-Type': 'video/mp4'
         }
+        print(f"Proxied request successful, status code: {response.status_code}")
         return Response(response.content, headers=headers)
     except Exception as e:
+        print(f"Error proxying request: {e}")
         return f"Ошибка при проксировании запроса: {e}", 500
 
 if __name__ == '__main__':
