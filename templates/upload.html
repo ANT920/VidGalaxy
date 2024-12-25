@@ -30,8 +30,8 @@
         <form action="{{ url_for('upload') }}" method="post" enctype="multipart/form-data">
             <label for="title">Название видео:</label>
             <input type="text" id="title" name="title" required><br><br>
-            <label for="google_drive_url">Ссылка на Google Drive:</label>
-            <input type="url" id="google_drive_url" name="google_drive_url" required><br><br>
+            <label for="file">Выберите видеофайл:</label>
+            <input type="file" id="file" name="file" required><br><br>
             <input type="submit" value="Загрузить">
         </form>
     </main>
