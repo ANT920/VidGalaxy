@@ -1,4 +1,4 @@
-from flask import Flask, render_template, request, redirect, url_for, send_from_directory, jsonify
+from flask import Flask, render_template, request, redirect, url_for, send_from_directory, jsonify, Response
 from sqlalchemy import create_engine, Table, Column, BigInteger, Text, MetaData, TIMESTAMP
 from sqlalchemy.orm import sessionmaker
 from dotenv import load_dotenv
@@ -144,23 +144,22 @@ def watch_video(video_id):
         return render_template('watch.html', video=video)
     return "Видео не найдено", 404
 
-@app.route('/get_temporary_link/<int:video_id>')
-def get_temporary_link(video_id):
-    with engine.connect() as connection:
-        video = connection.execute(videos.select().where(videos.c.id == video_id)).fetchone()
-    if video:
-        try:
-            dbx = dropbox.Dropbox(DROPBOX_ACCESS_TOKEN)
-            dropbox_path = video.filename.replace("https://www.dropbox.com", "").replace("?raw=1", "")
-            print(f"Attempting to get temporary link for path: {dropbox_path}")
-            temp_link_metadata = dbx.files_get_temporary_link(dropbox_path)
-            temp_link = temp_link_metadata.link
-            print(f"Temporary link obtained: {temp_link}")
-            return jsonify({'temporary_link': temp_link})
-        except Exception as e:
-            print(f"Error getting temporary link: {e}")
-            return f"Ошибка при получении временной ссылки: {e}", 500
-    return "Видео не найдено", 404
+@app.route('/proxy/<path:url>')
+def proxy(url):
+    try:
+        dropbox_url = f"https://content.dropboxapi.com/2/files/download?arg={url}"
+        headers = {
+            'Authorization': f'Bearer {DROPBOX_ACCESS_TOKEN}',
+            'Dropbox-API-Arg': f'{{"path": "{url}"}}'
+        }
+        response = requests.get(dropbox_url, headers=headers, stream=True)
+        headers = {
+            'Access-Control-Allow-Origin': '*',
+            'Content-Type': 'video/mp4'
+        }
+        return Response(response.content, headers=headers)
+    except Exception as e:
+        return f"Ошибка при проксировании запроса: {e}", 500
 
 if __name__ == '__main__':
     port = int(os.environ.get('PORT', 5000))
