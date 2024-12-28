@@ -4,3 +4,4 @@ python-dotenv
 psycopg2
 flask_cors
 requests
+vimeo-api
