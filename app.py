@@ -4,7 +4,7 @@ from sqlalchemy.orm import sessionmaker
 from dotenv import load_dotenv
 import os
 from datetime import datetime
-import vimeo
+from vimeo import VimeoClient
 from sqlalchemy.sql import text
 from flask_cors import CORS
 
@@ -61,7 +61,7 @@ videos = Table(
 metadata.create_all(engine)
 
 # Инициализация клиента Vimeo
-vimeo_client = vimeo.VimeoClient(
+vimeo_client = VimeoClient(
     token=VIMEO_ACCESS_TOKEN,
     key=VIMEO_CLIENT_ID,
     secret=VIMEO_CLIENT_SECRET
