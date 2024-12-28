@@ -1,7 +1,6 @@
 flask
 sqlalchemy
 python-dotenv
-vimeo3
 psycopg2
 flask_cors
 requests
