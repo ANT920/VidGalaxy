@@ -24,7 +24,6 @@ if not os.path.exists(app.config['UPLOAD_FOLDER']):
 # Получение переменных окружения
 DATABASE_URL = os.environ.get('DATABASE_URL')
 VIMEO_ACCESS_TOKEN = os.environ.get('VIMEO_ACCESS_TOKEN')
-VIMEO_USER_ID = os.environ.get('VIMEO_USER_ID')
 
 # Создание подключения к базе данных
 engine = create_engine(DATABASE_URL)
@@ -98,7 +97,7 @@ def upload():
                     'Content-Type': 'application/json'
                 }
                 upload_link_response = requests.post(
-                    f'https://api.vimeo.com/users/{VIMEO_USER_ID}/videos',
+                    'https://api.vimeo.com/me/videos',
                     headers=headers,
                     json={'upload': {'approach': 'tus', 'size': os.path.getsize(filepath)}}
                 )
