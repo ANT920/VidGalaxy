@@ -4,7 +4,7 @@ from sqlalchemy.orm import sessionmaker
 from dotenv import load_dotenv
 import os
 from datetime import datetime
-import requests
+import vimeo
 from sqlalchemy.sql import text
 from flask_cors import CORS
 
@@ -24,6 +24,8 @@ if not os.path.exists(app.config['UPLOAD_FOLDER']):
 # Получение переменных окружения
 DATABASE_URL = os.environ.get('DATABASE_URL')
 VIMEO_ACCESS_TOKEN = os.environ.get('VIMEO_ACCESS_TOKEN')
+VIMEO_CLIENT_ID = os.environ.get('VIMEO_CLIENT_ID')
+VIMEO_CLIENT_SECRET = os.environ.get('VIMEO_CLIENT_SECRET')
 
 # Создание подключения к базе данных
 engine = create_engine(DATABASE_URL)
@@ -57,6 +59,13 @@ videos = Table(
 
 # Создание таблицы в базе данных, если её нет
 metadata.create_all(engine)
+
+# Инициализация клиента Vimeo
+vimeo_client = vimeo.VimeoClient(
+    token=VIMEO_ACCESS_TOKEN,
+    key=VIMEO_CLIENT_ID,
+    secret=VIMEO_CLIENT_SECRET
+)
 
 @app.route('/')
 def home():
@@ -92,34 +101,13 @@ def upload():
             # Загрузка файла на Vimeo и получение ссылки для встраивания
             try:
                 print("Attempting to upload file to Vimeo...")
-                headers = {
-                    'Authorization': f'Bearer {VIMEO_ACCESS_TOKEN}',
-                    'Content-Type': 'application/json'
-                }
-                upload_link_response = requests.post(
-                    'https://api.vimeo.com/me/videos',
-                    headers=headers,
-                    json={'upload': {'approach': 'tus', 'size': os.path.getsize(filepath)}}
-                )
-                upload_link_response.raise_for_status()
-                upload_link = upload_link_response.json()['upload']['upload_link']
-                
-                with open(filepath, 'rb') as f:
-                    tus_headers = headers.copy()
-                    tus_headers.update({
-                        'Upload-Offset': '0',
-                        'Tus-Resumable': '1.0.0',
-                        'Content-Length': str(os.path.getsize(filepath))
-                    })
-                    response = requests.patch(upload_link, headers=tus_headers, data=f)
-                    response.raise_for_status()
-
-                video_id = upload_link_response.json()['uri'].split('/')[-1]
+                uri = vimeo_client.upload(filepath, data={'name': title})
+                video_id = uri.split('/')[-1]
                 embed_link = f"https://player.vimeo.com/video/{video_id}"
                 print(f"File successfully uploaded to Vimeo at: {embed_link}")
-            except requests.exceptions.RequestException as e:
-                print(f"Failed to upload file to Vimeo: {e.response.text}")
-                return f"Ошибка при загрузке файла в Vimeo: {e.response.text}", 500
+            except vimeo.exceptions.VimeoUploadException as e:
+                print(f"Failed to upload file to Vimeo: {e.message}")
+                return f"Ошибка при загрузке файла в Vimeo: {e.message}", 500
 
             # Сохранение информации о видео в базу данных
             upload_date = datetime.now()
