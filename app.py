@@ -117,9 +117,9 @@ def upload():
                 video_id = upload_link_response.json()['uri'].split('/')[-1]
                 embed_link = f"https://player.vimeo.com/video/{video_id}"
                 print(f"File successfully uploaded to Vimeo at: {embed_link}")
-            except Exception as e:
-                print(f"Failed to upload file to Vimeo: {e}")
-                return "Ошибка при загрузке файла в Vimeo", 500
+            except requests.exceptions.RequestException as e:
+                print(f"Failed to upload file to Vimeo: {e.response.text}")
+                return f"Ошибка при загрузке файла в Vimeo: {e.response.text}", 500
 
             # Сохранение информации о видео в базу данных
             upload_date = datetime.now()
