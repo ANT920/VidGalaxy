@@ -1,7 +1,7 @@
 flask
 sqlalchemy
 python-dotenv
-vimeo
+vimeo3
 psycopg2
 flask_cors
-requests==2.25.1  # Укажем конкретную версию
+requests
