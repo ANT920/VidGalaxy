@@ -51,7 +51,7 @@ videos = Table(
     'videos', metadata,
     Column('id', BigInteger, primary_key=True),
     Column('title', Text),
-    Column('embed_link', Text),
+    Column('embed_link', Text),  # Добавление колонки embed_link
     Column('upload_date', TIMESTAMP(timezone=True))
 )
 
