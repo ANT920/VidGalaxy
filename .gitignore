@@ -1,13 +1,4 @@
-# Environment
 .env
-
-# Local files
-server_uploads/*
-uploads/*
-
-# Python
-*.pyc
 __pycache__/
-
-# Other
-node_modules/
+*.pyc
+*.log
